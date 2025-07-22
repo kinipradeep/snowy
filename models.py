@@ -40,7 +40,8 @@ class User(db.Model):
     # Relationships
     owned_organizations = db.relationship('Organization', backref='owner', lazy=True)
     organization_roles = db.relationship('UserRole', backref='user', lazy=True, cascade='all, delete-orphan')
-    invitations = db.relationship('OrganizationInvitation', backref='invitee', lazy=True, cascade='all, delete-orphan')
+    received_invitations = db.relationship('OrganizationInvitation', foreign_keys='OrganizationInvitation.invitee_id', backref='invitee', lazy=True, cascade='all, delete-orphan')
+    sent_invitations = db.relationship('OrganizationInvitation', foreign_keys='OrganizationInvitation.invited_by_id', backref='inviter', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Set password hash"""
@@ -94,7 +95,7 @@ class OrganizationInvitation(db.Model):
     expires_at = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    invited_by = db.relationship('User', foreign_keys=[invited_by_id])
+
     
     def generate_token(self):
         """Generate unique invitation token"""
