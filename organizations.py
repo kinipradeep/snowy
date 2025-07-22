@@ -79,10 +79,10 @@ def settings(org_id):
                          email_configured=bool(email_config),
                          whatsapp_configured=bool(whatsapp_config))
 
-@organizations_bp.route('/<int:org_id>/save-sms-config', methods=['POST'])
+@organizations_bp.route('/<int:org_id>/save-all-messaging-config', methods=['POST'])
 @login_required
-def save_sms_config(org_id):
-    """Save SMS configuration"""
+def save_all_messaging_config(org_id):
+    """Save all messaging configuration"""
     user = get_current_user()
     user_role = UserRole.query.filter_by(user_id=user.id, organization_id=org_id).first()
     
@@ -96,40 +96,18 @@ def save_sms_config(org_id):
         config = OrganizationConfig(organization_id=org_id)
         db.session.add(config)
     
-    # Build SMS config
     import json
+    
+    # Build SMS config
     sms_config = {
         'provider': request.form.get('sms_provider'),
         'api_key': request.form.get('sms_api_key'),
         'auth_token': request.form.get('sms_auth_token'),
         'from_number': request.form.get('sms_from_number')
     }
-    
     config.sms_config = json.dumps(sms_config)
-    db.session.commit()
     
-    flash('SMS configuration saved successfully!', 'success')
-    return redirect(url_for('organizations.settings', org_id=org_id))
-
-@organizations_bp.route('/<int:org_id>/save-email-config', methods=['POST'])
-@login_required
-def save_email_config(org_id):
-    """Save email configuration"""
-    user = get_current_user()
-    user_role = UserRole.query.filter_by(user_id=user.id, organization_id=org_id).first()
-    
-    if not user_role or user_role.role not in ['owner', 'admin']:
-        flash('You do not have permission to modify organization settings.', 'danger')
-        return redirect(url_for('organizations.settings', org_id=org_id))
-    
-    # Get or create organization config
-    config = OrganizationConfig.query.filter_by(organization_id=org_id).first()
-    if not config:
-        config = OrganizationConfig(organization_id=org_id)
-        db.session.add(config)
-    
-    # Build email config
-    import json
+    # Build Email config
     email_config = {
         'smtp_host': request.form.get('smtp_host'),
         'smtp_port': request.form.get('smtp_port'),
@@ -138,43 +116,22 @@ def save_email_config(org_id):
         'password': request.form.get('smtp_password'),
         'from_name': request.form.get('smtp_from_name')
     }
-    
     config.email_config = json.dumps(email_config)
-    db.session.commit()
-    
-    flash('Email configuration saved successfully!', 'success')
-    return redirect(url_for('organizations.settings', org_id=org_id))
-
-@organizations_bp.route('/<int:org_id>/save-whatsapp-config', methods=['POST'])
-@login_required
-def save_whatsapp_config(org_id):
-    """Save WhatsApp configuration"""
-    user = get_current_user()
-    user_role = UserRole.query.filter_by(user_id=user.id, organization_id=org_id).first()
-    
-    if not user_role or user_role.role not in ['owner', 'admin']:
-        flash('You do not have permission to modify organization settings.', 'danger')
-        return redirect(url_for('organizations.settings', org_id=org_id))
-    
-    # Get or create organization config
-    config = OrganizationConfig.query.filter_by(organization_id=org_id).first()
-    if not config:
-        config = OrganizationConfig(organization_id=org_id)
-        db.session.add(config)
     
     # Build WhatsApp config
-    import json
     whatsapp_config = {
         'account_id': request.form.get('whatsapp_account_id'),
         'phone_id': request.form.get('whatsapp_phone_id'),
         'access_token': request.form.get('whatsapp_access_token')
     }
-    
     config.whatsapp_config = json.dumps(whatsapp_config)
+    
     db.session.commit()
     
-    flash('WhatsApp configuration saved successfully!', 'success')
+    flash('All messaging settings saved successfully!', 'success')
     return redirect(url_for('organizations.settings', org_id=org_id))
+
+
 
 @organizations_bp.route('/<int:org_id>/test-sms-config', methods=['POST'])
 @login_required
