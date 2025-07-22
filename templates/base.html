@@ -1,67 +1,78 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Contact Manager{% endblock %}</title>
+    <title>{% block title %}Cool Blue{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
     
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <!-- Enterprise CSS -->
+    <link href="{{ url_for('static', filename='css/enterprise.css') }}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i data-feather="users" class="me-2"></i>Contact Manager
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/cool-blue-logo.svg') }}" alt="Cool Blue Logo" height="32" class="me-2">
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i data-feather="menu" width="20" height="20"></i>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 {% if session.user_id %}
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
-                            <i data-feather="home" class="me-1"></i>Dashboard
+                        <a class="nav-link {% if request.endpoint == 'index' %}active{% endif %}" href="{{ url_for('index') }}">
+                            <i data-feather="home" width="16" height="16"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('contacts.contacts') }}">
-                            <i data-feather="users" class="me-1"></i>Contacts
+                        <a class="nav-link {% if request.endpoint and 'contacts' in request.endpoint %}active{% endif %}" href="{{ url_for('contacts.contacts') }}">
+                            <i data-feather="users" width="16" height="16"></i>Contacts
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('groups.groups') }}">
-                            <i data-feather="folder" class="me-1"></i>Groups
+                        <a class="nav-link {% if request.endpoint and 'groups' in request.endpoint %}active{% endif %}" href="{{ url_for('groups.groups') }}">
+                            <i data-feather="folder" width="16" height="16"></i>Groups
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('templates.templates') }}">
-                            <i data-feather="file-text" class="me-1"></i>Templates
+                        <a class="nav-link {% if request.endpoint and 'templates' in request.endpoint %}active{% endif %}" href="{{ url_for('templates.templates') }}">
+                            <i data-feather="message-square" width="16" height="16"></i>Templates
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint and 'organizations' in request.endpoint %}active{% endif %}" href="{{ url_for('organizations.organizations') }}">
+                            <i data-feather="briefcase" width="16" height="16"></i>Organizations
                         </a>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i data-feather="user" class="me-1"></i>{{ session.username }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar">
+                                {{ session.username[0].upper() }}
+                            </div>
+                            <span class="d-none d-md-inline">{{ session.username }}</span>
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#">
-                                <i data-feather="settings" class="me-2"></i>Settings
+                                <i data-feather="user" width="16" height="16"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i data-feather="settings" width="16" height="16"></i>Settings
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i data-feather="log-out" class="me-2"></i>Logout
+                                <i data-feather="log-out" width="16" height="16"></i>Logout
                             </a></li>
                         </ul>
                     </li>
@@ -70,12 +81,12 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">
-                            <i data-feather="log-in" class="me-1"></i>Login
+                            <i data-feather="log-in" width="16" height="16"></i>Sign In
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">
-                            <i data-feather="user-plus" class="me-1"></i>Register
+                        <a class="btn btn-primary" href="{{ url_for('auth.register') }}">
+                            <i data-feather="user-plus" width="16" height="16"></i>Get Started
                         </a>
                     </li>
                 </ul>
@@ -84,8 +95,8 @@
         </div>
     </nav>
 
-    <main class="py-4">
-        <div class="container">
+    <main class="py-0">
+        <div class="{% if not session.user_id %}p-0{% endif %}"{% if session.user_id %} style="padding-top: 80px;"{% endif %}>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -97,13 +108,32 @@
                 {% endif %}
             {% endwith %}
 
+            {% if session.user_id %}
+            <div class="container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            {% endif %}
+            
             {% block content %}{% endblock %}
         </div>
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="py-5 mt-5" style="background: var(--bg-surface-secondary); border-top: 1px solid var(--border-default);">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2025 Contact Manager. Built with Flask and Bootstrap.</p>
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                <i data-feather="zap" width="20" height="20" style="color: var(--primary);"></i>
+                <span class="fw-bold" style="color: var(--text-primary);">Cool Blue</span>
+            </div>
+            <p class="small mb-0" style="color: var(--text-tertiary);">&copy; 2025 Cool Blue. Enterprise communication management made simple.</p>
         </div>
     </footer>
 

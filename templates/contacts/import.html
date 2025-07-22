@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Import Contacts - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i data-feather="upload" class="me-2"></i>Import Contacts from CSV
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i data-feather="info" class="me-2"></i>CSV Format Requirements</h6>
+                        <p class="mb-2">Your CSV file should have the following columns (first row as headers):</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Core Fields:</h6>
+                                <ul class="mb-2 small">
+                                    <li><strong>first_name</strong> (required)</li>
+                                    <li><strong>last_name</strong> (required)</li>
+                                    <li><strong>middle_name</strong></li>
+                                    <li><strong>prefix</strong> (Mr., Ms., Dr.)</li>
+                                    <li><strong>suffix</strong> (Jr., Sr., PhD)</li>
+                                    <li><strong>email</strong> (unique if provided)</li>
+                                    <li><strong>email_secondary</strong></li>
+                                    <li><strong>phone</strong></li>
+                                    <li><strong>mobile</strong></li>
+                                    <li><strong>fax</strong></li>
+                                    <li><strong>website</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Professional & Location:</h6>
+                                <ul class="mb-2 small">
+                                    <li><strong>company</strong></li>
+                                    <li><strong>job_title</strong></li>
+                                    <li><strong>department</strong></li>
+                                    <li><strong>industry</strong></li>
+                                    <li><strong>address</strong></li>
+                                    <li><strong>address_line_2</strong></li>
+                                    <li><strong>city</strong></li>
+                                    <li><strong>state</strong></li>
+                                    <li><strong>postal_code</strong></li>
+                                    <li><strong>country</strong></li>
+                                    <li><strong>group</strong> (group name)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Personal & Social:</h6>
+                                <ul class="mb-2 small">
+                                    <li><strong>birthday</strong> (YYYY-MM-DD)</li>
+                                    <li><strong>gender</strong></li>
+                                    <li><strong>marital_status</strong></li>
+                                    <li><strong>linkedin</strong></li>
+                                    <li><strong>twitter</strong></li>
+                                    <li><strong>facebook</strong></li>
+                                    <li><strong>instagram</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Business & Communication:</h6>
+                                <ul class="mb-2 small">
+                                    <li><strong>skype</strong></li>
+                                    <li><strong>whatsapp</strong></li>
+                                    <li><strong>telegram</strong></li>
+                                    <li><strong>lead_source</strong></li>
+                                    <li><strong>lead_status</strong></li>
+                                    <li><strong>priority</strong> (high/normal/low)</li>
+                                    <li><strong>tags</strong> (comma-separated)</li>
+                                    <li><strong>notes</strong></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <small>Note: If a group name is specified but doesn't exist, the contact will be imported without a group.</small>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">Select CSV File</label>
+                            <input type="file" class="form-control" id="csv_file" name="csv_file" 
+                                   accept=".csv" required>
+                            <div class="form-text">Choose a CSV file with your contact data</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-secondary">
+                                <i data-feather="arrow-left" class="me-2"></i>Back to Contacts
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="upload" class="me-2"></i>Import Contacts
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i data-feather="download" class="me-2"></i>Sample CSV Template
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>Copy and paste this template into your spreadsheet program:</p>
+                    <div class="mb-3">
+                        <p><strong>Minimal CSV Template (Required Fields Only):</strong></p>
+                        <pre class="bg-light p-3 rounded small"><code>first_name,last_name,email,phone,company,job_title,group
+John,Doe,john.doe@example.com,555-0123,Acme Corp,Sales Manager,Sales
+Jane,Smith,jane.smith@example.com,555-0125,Tech Solutions,Developer,Development</code></pre>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p><strong>Complete CSV Template (All Available Fields):</strong></p>
+                        <div class="overflow-auto">
+                            <pre class="bg-light p-3 rounded small"><code>first_name,last_name,middle_name,prefix,suffix,email,email_secondary,phone,mobile,fax,website,company,job_title,department,industry,address,address_line_2,city,state,postal_code,country,birthday,gender,marital_status,linkedin,twitter,facebook,instagram,skype,whatsapp,telegram,lead_source,lead_status,priority,tags,group,notes
+John,Doe,Michael,Mr.,Jr.,john.doe@example.com,j.doe@personal.com,555-0123,555-0124,555-0125,www.johndoe.com,Acme Corp,Sales Manager,Sales,Technology,"123 Main St",Suite 100,New York,NY,10001,USA,1985-03-15,Male,Married,linkedin.com/in/johndoe,@johndoe,facebook.com/johndoe,@johndoe_insta,john.doe.skype,+15550124,@johndoe_tg,Website,Customer,high,"VIP,Sales,Tech",Sales,Important long-term client</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

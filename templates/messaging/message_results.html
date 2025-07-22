@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Message Results - ContactHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('templates.templates') }}">Templates</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('templates.send_message') }}">Send Message</a></li>
+                    <li class="breadcrumb-item active">Results</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Message Delivery Results</h1>
+            <p class="text-muted">Summary of your message delivery</p>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="row mb-5">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stats-card stats-success">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stats-number">{{ results.sent }}</div>
+                        <div class="stats-label">Messages Sent</div>
+                    </div>
+                    <div class="stats-icon">
+                        <i data-feather="check-circle" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stats-card stats-warning">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stats-number">{{ results.failed }}</div>
+                        <div class="stats-label">Failed</div>
+                    </div>
+                    <div class="stats-icon">
+                        <i data-feather="alert-circle" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="stats-card stats-info">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="stats-number">{{ results.sent + results.failed }}</div>
+                        <div class="stats-label">Total Contacts</div>
+                    </div>
+                    <div class="stats-icon">
+                        <i data-feather="users" width="32" height="32"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Status Alert -->
+    {% if results.success %}
+    <div class="alert alert-success d-flex align-items-center mb-4">
+        <i data-feather="check-circle" width="20" height="20" class="me-3"></i>
+        <div>
+            <strong>Success!</strong> Your messages have been processed. 
+            {{ results.sent }} out of {{ results.sent + results.failed }} messages were sent successfully.
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-danger d-flex align-items-center mb-4">
+        <i data-feather="alert-circle" width="20" height="20" class="me-3"></i>
+        <div>
+            <strong>Error:</strong> {{ results.error }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Results -->
+    {% if results.details %}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i data-feather="list" width="20" height="20" class="me-2"></i>
+                Detailed Results
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Contact</th>
+                            <th>Channel</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in results.details %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                        {{ detail.contact_name.split()[0][0] if detail.contact_name.split() }}{{ detail.contact_name.split()[1][0] if detail.contact_name.split()|length > 1 }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ detail.contact_name }}</div>
+                                        <small class="text-muted">ID: {{ detail.contact_id }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {% if detail.channel == 'email' %}
+                                <span class="badge bg-info d-flex align-items-center gap-1" style="width: fit-content;">
+                                    <i data-feather="mail" width="12" height="12"></i>
+                                    EMAIL
+                                </span>
+                                {% elif detail.channel == 'sms' %}
+                                <span class="badge bg-success d-flex align-items-center gap-1" style="width: fit-content;">
+                                    <i data-feather="message-circle" width="12" height="12"></i>
+                                    SMS
+                                </span>
+                                {% elif detail.channel == 'whatsapp' %}
+                                <span class="badge bg-success d-flex align-items-center gap-1" style="width: fit-content;">
+                                    <i data-feather="message-square" width="12" height="12"></i>
+                                    WHATSAPP
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ detail.channel.upper() }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if detail.success %}
+                                <span class="badge bg-success d-flex align-items-center gap-1" style="width: fit-content;">
+                                    <i data-feather="check" width="12" height="12"></i>
+                                    Sent
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger d-flex align-items-center gap-1" style="width: fit-content;">
+                                    <i data-feather="x" width="12" height="12"></i>
+                                    Failed
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if detail.success %}
+                                <span class="text-success">{{ detail.message or 'Message sent successfully' }}</span>
+                                {% else %}
+                                <span class="text-danger">{{ detail.error or 'Unknown error' }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="d-flex gap-3 mt-4">
+        <a href="{{ url_for('templates.send_message') }}" class="btn btn-primary">
+            <i data-feather="send" width="16" height="16" class="me-2"></i>
+            Send Another Message
+        </a>
+        <a href="{{ url_for('templates.templates') }}" class="btn btn-outline-secondary">
+            <i data-feather="arrow-left" width="16" height="16" class="me-2"></i>
+            Back to Templates
+        </a>
+        <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-secondary">
+            <i data-feather="users" width="16" height="16" class="me-2"></i>
+            View Contacts
+        </a>
+    </div>
+</div>
+{% endblock %}

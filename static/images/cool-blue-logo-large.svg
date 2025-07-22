@@ -1,0 +1,37 @@
+<svg width="200" height="80" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="coolBlueGradientLarge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="coolBlueTextLarge" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2563eb;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadowLarge">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Logo icon - stylized "C" with modern design -->
+  <circle cx="40" cy="40" r="32" fill="url(#coolBlueGradientLarge)" stroke="none" filter="url(#shadowLarge)"/>
+  <path d="M 56 24 A 16 16 0 0 0 24 40 A 16 16 0 0 0 56 56" 
+        stroke="white" 
+        stroke-width="6" 
+        fill="none" 
+        stroke-linecap="round"/>
+  
+  <!-- Brand text -->
+  <text x="84" y="30" 
+        font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="24" 
+        font-weight="800" 
+        fill="url(#coolBlueTextLarge)">Cool</text>
+  
+  <text x="84" y="56" 
+        font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" 
+        font-size="24" 
+        font-weight="800" 
+        fill="url(#coolBlueTextLarge)">Blue</text>
+</svg>

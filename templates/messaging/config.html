@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}Messaging Configuration - ContactHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('templates.templates') }}">Templates</a></li>
+                    <li class="breadcrumb-item active">Messaging Configuration</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Messaging Configuration</h1>
+            <p class="text-muted">Configure your email, SMS, and WhatsApp messaging services</p>
+        </div>
+    </div>
+
+    <!-- Configuration Status -->
+    <div class="row mb-5">
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i data-feather="mail" width="20" height="20" class="text-info"></i>
+                            <h6 class="mb-0">Email Service</h6>
+                        </div>
+                        {% if aws_ses_configured or smtp_configured %}
+                        <span class="badge bg-success">Configured</span>
+                        {% else %}
+                        <span class="badge bg-warning">Not Configured</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {% if aws_ses_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            AWS SES Ready
+                        </div>
+                        {% endif %}
+                        {% if smtp_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            Custom SMTP Ready
+                        </div>
+                        {% endif %}
+                        {% if not aws_ses_configured and not smtp_configured %}
+                        <div class="text-muted small">
+                            <i data-feather="x" width="14" height="14" class="me-1"></i>
+                            No email service configured
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        {% if aws_ses_configured or smtp_configured %}
+                        <button class="btn btn-sm btn-outline-primary" onclick="testEmailConfig()">
+                            <i data-feather="send" width="14" height="14" class="me-1"></i>
+                            Test Email
+                        </button>
+                        {% endif %}
+                        <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#emailConfigModal">
+                            <i data-feather="settings" width="14" height="14" class="me-1"></i>
+                            Configure
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i data-feather="message-circle" width="20" height="20" class="text-success"></i>
+                            <h6 class="mb-0">SMS Service</h6>
+                        </div>
+                        {% if twilio_configured %}
+                        <span class="badge bg-success">Configured</span>
+                        {% else %}
+                        <span class="badge bg-warning">Not Configured</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {% if custom_sms_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            Custom SMS Gateway Ready
+                        </div>
+                        {% endif %}
+                        {% if twilio_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            Twilio SMS Ready
+                        </div>
+                        {% endif %}
+                        {% if not custom_sms_configured and not twilio_configured %}
+                        <div class="text-muted small">
+                            <i data-feather="x" width="14" height="14" class="me-1"></i>
+                            No SMS service configured
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#smsConfigModal">
+                        <i data-feather="settings" width="14" height="14" class="me-1"></i>
+                        Configure
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <i data-feather="message-square" width="20" height="20" class="text-success"></i>
+                            <h6 class="mb-0">WhatsApp Service</h6>
+                        </div>
+                        {% if twilio_configured %}
+                        <span class="badge bg-success">Configured</span>
+                        {% else %}
+                        <span class="badge bg-warning">Not Configured</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {% if twilio_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            Twilio WhatsApp Ready
+                        </div>
+                        {% else %}
+                        <div class="text-muted small">
+                            <i data-feather="x" width="14" height="14" class="me-1"></i>
+                            Twilio not configured
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#whatsappConfigModal">
+                        <i data-feather="settings" width="14" height="14" class="me-1"></i>
+                        Configure
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Guide -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">
+                <i data-feather="book" width="20" height="20" class="me-2"></i>
+                Configuration Guide
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h6 class="fw-semibold text-info">
+                        <i data-feather="mail" width="16" height="16" class="me-1"></i>
+                        Email Configuration
+                    </h6>
+                    <p class="small text-muted mb-2">ContactHub supports two email delivery methods:</p>
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>AWS SES (Recommended):</strong><br>
+                            • Set AWS_ACCESS_KEY_ID<br>
+                            • Set AWS_SECRET_ACCESS_KEY<br>
+                            • Set AWS_SES_FROM_EMAIL<br>
+                            • Set AWS_REGION (optional)
+                        </div>
+                        <div>
+                            <strong>Custom SMTP:</strong><br>
+                            • Set SMTP_HOST<br>
+                            • Set SMTP_PORT<br>
+                            • Set SMTP_USERNAME<br>
+                            • Set SMTP_PASSWORD<br>
+                            • Set SMTP_FROM_EMAIL (optional)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <h6 class="fw-semibold text-success">
+                        <i data-feather="message-circle" width="16" height="16" class="me-1"></i>
+                        SMS Configuration
+                    </h6>
+                    <p class="small text-muted mb-2">Multiple SMS gateways supported:</p>
+                    <div class="small">
+                        <div class="mb-2">
+                            <strong>Custom SMS Gateway:</strong><br>
+                            • Set SMS_GATEWAY_URL<br>
+                            • Set SMS_GATEWAY_TYPE (textlocal, msg91, clickatell, or generic)<br>
+                            • Set SMS_GATEWAY_API_KEY (for API-based auth)<br>
+                            OR<br>
+                            • Set SMS_GATEWAY_USERNAME & SMS_GATEWAY_PASSWORD<br>
+                            • Set SMS_GATEWAY_SENDER_ID (optional)
+                        </div>
+                        <div>
+                            <strong>Twilio SMS (Fallback):</strong><br>
+                            • TWILIO_ACCOUNT_SID<br>
+                            • TWILIO_AUTH_TOKEN<br>
+                            • TWILIO_PHONE_NUMBER
+                        </div>
+                    </div>
+                    <div class="mt-2 small">
+                        <a href="https://console.twilio.com/" target="_blank" class="text-decoration-none">
+                            <i data-feather="external-link" width="12" height="12" class="me-1"></i>
+                            Twilio Console
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <h6 class="fw-semibold text-success">
+                        <i data-feather="message-square" width="16" height="16" class="me-1"></i>
+                        WhatsApp Configuration
+                    </h6>
+                    <p class="small text-muted mb-2">WhatsApp delivery through Twilio:</p>
+                    <div class="small">
+                        <strong>Uses same Twilio credentials as SMS:</strong><br>
+                        • TWILIO_ACCOUNT_SID<br>
+                        • TWILIO_AUTH_TOKEN<br>
+                        • TWILIO_WHATSAPP_NUMBER (optional)
+                    </div>
+                    <div class="mt-2 small">
+                        <a href="https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn" target="_blank" class="text-decoration-none">
+                            <i data-feather="external-link" width="12" height="12" class="me-1"></i>
+                            Setup WhatsApp Sandbox
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="d-flex gap-3 mt-4">
+        <a href="{{ url_for('templates.templates') }}" class="btn btn-primary">
+            <i data-feather="arrow-left" width="16" height="16" class="me-2"></i>
+            Back to Templates
+        </a>
+        <a href="{{ url_for('templates.send_message') }}" class="btn btn-outline-primary">
+            <i data-feather="send" width="16" height="16" class="me-2"></i>
+            Send Message
+        </a>
+    </div>
+</div>
+
+<!-- Email Test Modal -->
+<div class="modal fade" id="emailTestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Test Email Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="emailTestForm">
+                    <div class="mb-3">
+                        <label for="testEmail" class="form-label">Test Email Address</label>
+                        <input type="email" class="form-control" id="testEmail" placeholder="your-email@example.com" required>
+                        <div class="form-text">We'll send a test email to verify your configuration.</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendTestEmail()">
+                    <i data-feather="send" width="16" height="16" class="me-1"></i>
+                    Send Test Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Configuration Modals (Placeholder) -->
+<div class="modal fade" id="emailConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Email Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i data-feather="info" width="16" height="16" class="me-2"></i>
+                    Email configuration is managed through environment variables. Contact your system administrator to set up email services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="smsConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">SMS Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i data-feather="info" width="16" height="16" class="me-2"></i>
+                    SMS configuration is managed through environment variables. Contact your system administrator to set up Twilio services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="whatsappConfigModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">WhatsApp Configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i data-feather="info" width="16" height="16" class="me-2"></i>
+                    WhatsApp configuration uses the same Twilio credentials as SMS. Contact your system administrator to set up services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testEmailConfig() {
+    const modal = new bootstrap.Modal(document.getElementById('emailTestModal'));
+    modal.show();
+}
+
+async function sendTestEmail() {
+    const emailInput = document.getElementById('testEmail');
+    const email = emailInput.value.trim();
+    
+    if (!email) {
+        alert('Please enter a valid email address.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('{{ url_for("templates.test_email_configuration") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ test_email: email })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Test email sent successfully via ${result.service || 'Email Service'}!`);
+            bootstrap.Modal.getInstance(document.getElementById('emailTestModal')).hide();
+        } else {
+            alert(`Failed to send test email: ${result.error}`);
+        }
+    } catch (error) {
+        alert(`Error sending test email: ${error.message}`);
+    }
+}
+</script>
+{% endblock %}
