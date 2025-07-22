@@ -305,11 +305,141 @@ const TemplateUtils = {
 };
 
 // Export for use in other scripts
+// Messaging Dashboard Functions
+function showSendMessageModal() {
+    // Create a modal for sending single messages
+    const modalHtml = `
+        <div class="modal fade" id="sendMessageModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title text-light">
+                            <i data-feather="message-circle" width="20" height="20" class="me-2"></i>
+                            Send Message
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Message Type</label>
+                                <select class="form-select bg-secondary text-light border-secondary">
+                                    <option value="sms">SMS</option>
+                                    <option value="email">Email</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Recipient</label>
+                                <input type="text" class="form-control bg-secondary text-light border-secondary" placeholder="Enter phone/email">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Message</label>
+                                <textarea class="form-control bg-secondary text-light border-secondary" rows="4" placeholder="Type your message..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary">Send Message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if present
+    const existingModal = document.getElementById('sendMessageModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Add modal to body and show
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('sendMessageModal'));
+    modal.show();
+    
+    // Reinitialize feather icons for the modal
+    setTimeout(() => feather.replace(), 100);
+}
+
+function showBulkMessageModal() {
+    const modalHtml = `
+        <div class="modal fade" id="bulkMessageModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content bg-dark">
+                    <div class="modal-header border-secondary">
+                        <h5 class="modal-title text-light">
+                            <i data-feather="users" width="20" height="20" class="me-2"></i>
+                            Bulk Message
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Message Type</label>
+                                <select class="form-select bg-secondary text-light border-secondary">
+                                    <option value="sms">SMS</option>
+                                    <option value="email">Email</option>
+                                    <option value="whatsapp">WhatsApp</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Target Audience</label>
+                                <select class="form-select bg-secondary text-light border-secondary">
+                                    <option value="all">All Contacts</option>
+                                    <option value="group">Specific Group</option>
+                                    <option value="filter">Custom Filter</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Message Template</label>
+                                <select class="form-select bg-secondary text-light border-secondary">
+                                    <option value="">Select a template...</option>
+                                    <option value="welcome">Welcome Message</option>
+                                    <option value="promo">Promotional Message</option>
+                                    <option value="custom">Custom Message</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light">Message Content</label>
+                                <textarea class="form-control bg-secondary text-light border-secondary" rows="5" placeholder="Type your message or select a template..."></textarea>
+                            </div>
+                            <div class="alert alert-info">
+                                <strong>Preview:</strong> This message will be sent to approximately <strong>0 contacts</strong>.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-outline-primary">Preview</button>
+                        <button type="button" class="btn btn-primary">Send to All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('bulkMessageModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('bulkMessageModal'));
+    modal.show();
+    
+    setTimeout(() => feather.replace(), 100);
+}
+
 window.CoolBlue = {
     showButtonLoading,
     hideButtonLoading,
     copyToClipboard,
     showNotification,
     confirmDelete,
-    TemplateUtils
+    TemplateUtils,
+    showSendMessageModal,
+    showBulkMessageModal
 };

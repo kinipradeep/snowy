@@ -71,6 +71,185 @@
     transform: scale(1.05);
 }
 
+/* Enhanced Dashboard Styling */
+.dashboard-header {
+    background: var(--gradient-dark);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    border: 1px solid var(--border-color);
+}
+
+.greeting-text {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: var(--spacing-sm);
+}
+
+.greeting-subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+/* Stats Cards Enhancement */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.stat-card {
+    background: var(--gradient-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    text-align: center;
+    border: 1px solid rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--spacing-md);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Enhanced Card Styling */
+.card {
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg) !important;
+    transition: all 0.3s ease !important;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl) !important;
+}
+
+.card-header {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+    font-weight: 600;
+}
+
+/* Table Enhancements */
+.table-dark {
+    --bs-table-bg: transparent;
+}
+
+.table-dark tbody tr:hover {
+    background-color: var(--card-hover) !important;
+}
+
+/* Button Enhancements */
+.btn {
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.dropdown-menu-dark {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.dropdown-item {
+    border-radius: var(--radius-sm);
+    margin: 2px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-color) !important;
+    transform: translateX(5px);
+}
+
+/* List Group Enhancements */
+.list-group-item-action:hover {
+    background-color: var(--card-hover) !important;
+    border-left: 3px solid var(--primary-color) !important;
+    padding-left: calc(var(--spacing-md) - 3px) !important;
+}
+
+/* Animation Classes */
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+    .greeting-text {
+        font-size: 2rem;
+    }
+    
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+}
+
 /* Base Styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

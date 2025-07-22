@@ -190,23 +190,27 @@
                 <h1 class="greeting-text">Good {{ time_greeting }}, {{ user.first_name or user.email.split('@')[0] if user else 'User' }}!</h1>
                 <p class="greeting-subtitle mb-3">Welcome back to your Cool Blue dashboard</p>
                 
-                <div class="action-button-group">
-                    <a href="{{ url_for('contacts.new_contact') }}" class="btn-action">
-                        <i data-feather="user-plus" width="16" height="16"></i>
-                        Add Contact
-                    </a>
-                    <a href="{{ url_for('contacts.import_contacts') }}" class="btn-action btn-action-secondary">
-                        <i data-feather="upload" width="16" height="16"></i>
-                        Import CSV
-                    </a>
-                    <a href="{{ url_for('templates.templates') }}" class="btn-action btn-action-secondary">
-                        <i data-feather="message-square" width="16" height="16"></i>
-                        Templates
-                    </a>
-                    <a href="#" class="btn-action btn-action-secondary" onclick="showApiModal()">
-                        <i data-feather="code" width="16" height="16"></i>
-                        API Keys
-                    </a>
+                <!-- Compact Action Menu -->
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="quickActionsDropdown" data-bs-toggle="dropdown">
+                        <i data-feather="plus" width="16" height="16" class="me-2"></i>
+                        Quick Actions
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark" style="background: var(--card-bg);">
+                        <li><a class="dropdown-item" href="{{ url_for('contacts.new_contact') }}">
+                            <i data-feather="user-plus" width="16" height="16" class="me-2"></i>Add Contact
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('contacts.import_contacts') }}">
+                            <i data-feather="upload" width="16" height="16" class="me-2"></i>Import CSV
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('templates.templates') }}">
+                            <i data-feather="message-square" width="16" height="16" class="me-2"></i>Templates
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="showApiModal()">
+                            <i data-feather="code" width="16" height="16" class="me-2"></i>API Keys
+                        </a></li>
+                    </ul>
                 </div>
             </div>
             
@@ -260,95 +264,149 @@
 
     <!-- Main Content Grid -->
     <div class="row">
-        <!-- Recent Activity -->
+        <!-- Recent Contacts Table -->
         <div class="col-lg-8 mb-4">
-            <div class="recent-activity animate-fade-in">
-                <div class="activity-header">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i data-feather="activity" width="20" height="20" class="me-2"></i>
-                        Recent Activity
+            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                    <h5 class="mb-0 d-flex align-items-center text-light">
+                        <i data-feather="users" width="20" height="20" class="me-2"></i>
+                        Recently Added Contacts
                     </h5>
                     <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-primary btn-sm">View All</a>
                 </div>
-                
-                {% if recent_contacts %}
-                    {% for contact in recent_contacts %}
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i data-feather="user-plus" width="16" height="16" style="color: white;"></i>
+                <div class="card-body p-0">
+                    {% if recent_contacts %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0">
+                                <thead>
+                                    <tr style="background: var(--card-hover);">
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Added</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contact in recent_contacts %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    <span class="text-white small fw-bold">{{ contact.first_name[0] }}{{ contact.last_name[0] if contact.last_name else '' }}</span>
+                                                </div>
+                                                <div>
+                                                    <div class="text-light">{{ contact.first_name }} {{ contact.last_name or '' }}</div>
+                                                    {% if contact.company %}<small class="text-muted">{{ contact.company }}</small>{% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-light">{{ contact.email or '-' }}</td>
+                                        <td class="text-light">{{ contact.phone or '-' }}</td>
+                                        <td class="text-muted small">{{ contact.created_at.strftime('%m/%d/%Y') }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('contacts.contact_detail', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i data-feather="eye" width="14" height="14"></i>
+                                                </a>
+                                                <a href="{{ url_for('contacts.edit_contact', contact_id=contact.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                    <i data-feather="edit" width="14" height="14"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="activity-content">
-                            <p class="activity-title">New contact added: {{ contact.first_name }} {{ contact.last_name }}</p>
-                            <p class="activity-meta">{{ contact.email }} • {{ contact.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i data-feather="users" width="48" height="48" class="text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No contacts yet</p>
+                            <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-primary">
+                                <i data-feather="user-plus" width="16" height="16" class="me-2"></i>
+                                Add Your First Contact
+                            </a>
                         </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="text-center py-4">
-                        <i data-feather="inbox" width="48" height="48" class="text-muted mb-3"></i>
-                        <p class="text-muted">No recent activity</p>
-                        <a href="{{ url_for('contacts.contact_form') }}" class="btn btn-primary">Add Your First Contact</a>
-                    </div>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
         
-        <!-- Quick Actions -->
+        <!-- Messaging Dashboard -->
         <div class="col-lg-4 mb-4">
-            <div class="quick-actions animate-fade-in">
-                <div class="activity-header">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <i data-feather="zap" width="20" height="20" class="me-2"></i>
-                        Quick Actions
+            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                <div class="card-header" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                    <h5 class="mb-0 d-flex align-items-center text-light">
+                        <i data-feather="send" width="20" height="20" class="me-2"></i>
+                        Messaging Dashboard
                     </h5>
                 </div>
-                
-                <div class="quick-actions-grid">
-                    <a href="{{ url_for('contacts.contacts') }}" class="quick-action-item">
-                        <div class="quick-action-icon">
-                            <i data-feather="users" width="20" height="20" style="color: white;"></i>
+                <div class="card-body">
+                    <!-- Message Stats -->
+                    <div class="row text-center mb-4">
+                        <div class="col-4">
+                            <div class="text-primary h4 mb-1">0</div>
+                            <div class="text-muted small">SMS Sent</div>
                         </div>
-                        <p class="quick-action-title">View Contacts</p>
-                    </a>
+                        <div class="col-4">
+                            <div class="text-success h4 mb-1">0</div>
+                            <div class="text-muted small">Emails</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info h4 mb-1">0</div>
+                            <div class="text-muted small">WhatsApp</div>
+                        </div>
+                    </div>
                     
-                    <a href="{{ url_for('groups.groups') }}" class="quick-action-item">
-                        <div class="quick-action-icon">
-                            <i data-feather="folder" width="20" height="20" style="color: white;"></i>
-                        </div>
-                        <p class="quick-action-title">Manage Groups</p>
-                    </a>
+                    <!-- Quick Send Options -->
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary btn-sm" onclick="showSendMessageModal()">
+                            <i data-feather="message-circle" width="16" height="16" class="me-2"></i>
+                            Send Message
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showBulkMessageModal()">
+                            <i data-feather="users" width="16" height="16" class="me-2"></i>
+                            Bulk Message
+                        </button>
+                    </div>
                     
-                    <a href="{{ url_for('templates.templates') }}" class="quick-action-item">
-                        <div class="quick-action-icon">
-                            <i data-feather="mail" width="20" height="20" style="color: white;"></i>
-                        </div>
-                        <p class="quick-action-title">Templates</p>
-                    </a>
-                    
-                    <a href="{{ url_for('organizations.organization_detail', org_id=organization.id) if organization else '#' }}" class="quick-action-item">
-                        <div class="quick-action-icon">
-                            <i data-feather="settings" width="20" height="20" style="color: white;"></i>
-                        </div>
-                        <p class="quick-action-title">Settings</p>
-                    </a>
+                    <!-- Recent Messages -->
+                    <hr style="border-color: var(--border-color);">
+                    <h6 class="text-light mb-3">Recent Messages</h6>
+                    <div class="text-center py-3">
+                        <i data-feather="inbox" width="32" height="32" class="text-muted mb-2"></i>
+                        <p class="text-muted small mb-0">No messages sent yet</p>
+                    </div>
                 </div>
-                
-                <!-- API Integration Section -->
-                <div class="mt-4 p-3 bg-primary bg-opacity-10 rounded">
-                    <h6 class="text-primary mb-2">
-                        <i data-feather="code" width="16" height="16" class="me-2"></i>
-                        API Integration
-                    </h6>
-                    <p class="text-muted small mb-3">Integrate with your existing systems using our REST API</p>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary btn-sm" onclick="showApiModal()">
-                            <i data-feather="key" width="14" height="14" class="me-1"></i>
-                            Manage Keys
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm" onclick="showApiDocsModal()">
-                            <i data-feather="book" width="14" height="14" class="me-1"></i>
-                            API Docs
-                        </button>
+            </div>
+            
+            <!-- Management Tools -->
+            <div class="card mt-3" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                <div class="card-header" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                    <h5 class="mb-0 d-flex align-items-center text-light">
+                        <i data-feather="tool" width="20" height="20" class="me-2"></i>
+                        Management Tools
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush bg-transparent">
+                        <a href="{{ url_for('contacts.contacts') }}" class="list-group-item list-group-item-action bg-transparent text-light border-0 px-0">
+                            <i data-feather="users" width="16" height="16" class="me-2"></i>
+                            View All Contacts
+                        </a>
+                        <a href="{{ url_for('groups.groups') }}" class="list-group-item list-group-item-action bg-transparent text-light border-0 px-0">
+                            <i data-feather="folder" width="16" height="16" class="me-2"></i>
+                            Manage Groups
+                        </a>
+                        <a href="{{ url_for('templates.templates') }}" class="list-group-item list-group-item-action bg-transparent text-light border-0 px-0">
+                            <i data-feather="file-text" width="16" height="16" class="me-2"></i>
+                            Message Templates
+                        </a>
+                        <a href="{{ url_for('organizations.organization_detail', org_id=organization.id) if organization else '#' }}" class="list-group-item list-group-item-action bg-transparent text-light border-0 px-0">
+                            <i data-feather="settings" width="16" height="16" class="me-2"></i>
+                            Organization Settings
+                        </a>
                     </div>
                 </div>
             </div>
