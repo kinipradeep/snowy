@@ -61,13 +61,36 @@ def settings(org_id):
     whatsapp_config = None
     
     if config:
-        import json
-        try:
-            sms_config = json.loads(config.sms_config) if config.sms_config else None
-            email_config = json.loads(config.email_config) if config.email_config else None  
-            whatsapp_config = json.loads(config.whatsapp_config) if config.whatsapp_config else None
-        except json.JSONDecodeError:
-            pass
+        # Build config dictionaries from individual fields
+        sms_config = {
+            'provider': config.sms_provider or 'twilio',
+            'api_key': config.sms_api_key or '',
+            'auth_token': config.sms_api_key or '',  # Using api_key as auth_token
+            'from_number': config.sms_sender_id or '',
+            'api_url': config.sms_api_url or ''
+        }
+        email_config = {
+            'provider': config.email_provider or 'smtp',
+            'smtp_host': config.smtp_host or '',
+            'smtp_port': config.smtp_port or 587,
+            'username': config.smtp_username or '',
+            'password': config.smtp_password or '',
+            'use_tls': config.smtp_use_tls if config.smtp_use_tls is not None else True,
+            'from_name': config.default_sender_name or '',
+            'aws_access_key': config.aws_access_key_id or '',
+            'aws_secret_key': config.aws_secret_access_key or '',
+            'aws_region': config.aws_region or 'us-east-1'
+        }
+        whatsapp_config = {
+            'api_url': config.whatsapp_api_url or '',
+            'api_key': config.whatsapp_api_key or '',
+            'phone_number': config.whatsapp_phone_number or '',
+            'webhook_url': config.whatsapp_webhook_url or ''
+        }
+    else:
+        sms_config = {'provider': 'twilio', 'api_key': '', 'auth_token': '', 'from_number': '', 'api_url': ''}
+        email_config = {'provider': 'smtp', 'smtp_host': '', 'smtp_port': 587, 'username': '', 'password': '', 'use_tls': True, 'from_name': ''}
+        whatsapp_config = {'api_url': '', 'api_key': '', 'phone_number': '', 'webhook_url': ''}
     
     return render_template('organizations/settings.html',
                          organization=organization,
@@ -98,33 +121,29 @@ def save_all_messaging_config(org_id):
     
     import json
     
-    # Build SMS config
-    sms_config = {
-        'provider': request.form.get('sms_provider'),
-        'api_key': request.form.get('sms_api_key'),
-        'auth_token': request.form.get('sms_auth_token'),
-        'from_number': request.form.get('sms_from_number')
-    }
-    config.sms_config = json.dumps(sms_config)
+    # Save SMS configuration
+    config.sms_provider = request.form.get('sms_provider', 'twilio')
+    config.sms_api_key = request.form.get('sms_api_key', '')
+    config.sms_sender_id = request.form.get('sms_from_number', '')
+    config.sms_api_url = request.form.get('sms_api_url', '')
     
-    # Build Email config
-    email_config = {
-        'smtp_host': request.form.get('smtp_host'),
-        'smtp_port': request.form.get('smtp_port'),
-        'security': request.form.get('smtp_security'),
-        'username': request.form.get('smtp_username'),
-        'password': request.form.get('smtp_password'),
-        'from_name': request.form.get('smtp_from_name')
-    }
-    config.email_config = json.dumps(email_config)
+    # Save Email configuration
+    config.email_provider = request.form.get('email_provider', 'smtp')
+    config.smtp_host = request.form.get('smtp_host', '')
+    config.smtp_port = int(request.form.get('smtp_port', 587)) if request.form.get('smtp_port') else 587
+    config.smtp_username = request.form.get('smtp_username', '')
+    config.smtp_password = request.form.get('smtp_password', '')
+    config.smtp_use_tls = request.form.get('smtp_use_tls') == 'on'
+    config.default_sender_name = request.form.get('email_from_name', '')
+    config.aws_access_key_id = request.form.get('aws_access_key', '')
+    config.aws_secret_access_key = request.form.get('aws_secret_key', '')
+    config.aws_region = request.form.get('aws_region', 'us-east-1')
     
-    # Build WhatsApp config
-    whatsapp_config = {
-        'account_id': request.form.get('whatsapp_account_id'),
-        'phone_id': request.form.get('whatsapp_phone_id'),
-        'access_token': request.form.get('whatsapp_access_token')
-    }
-    config.whatsapp_config = json.dumps(whatsapp_config)
+    # Save WhatsApp configuration
+    config.whatsapp_api_url = request.form.get('whatsapp_api_url', '')
+    config.whatsapp_api_key = request.form.get('whatsapp_api_key', '')
+    config.whatsapp_phone_number = request.form.get('whatsapp_phone_number', '')
+    config.whatsapp_webhook_url = request.form.get('whatsapp_webhook_url', '')
     
     db.session.commit()
     
