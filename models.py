@@ -335,6 +335,96 @@ class ApiKey(db.Model):
     def __repr__(self):
         return f'<ApiKey {self.name}>'
 
+# Message Tracking Models
+class MessageCampaign(db.Model):
+    """Campaign tracking for message sends"""
+    __tablename__ = 'message_campaigns'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    template_id = db.Column(db.Integer, db.ForeignKey('template.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    status = db.Column(db.String(20), default='draft')  # draft, scheduled, sending, completed, cancelled
+    
+    # Scheduling
+    scheduled_at = db.Column(db.DateTime)
+    sent_at = db.Column(db.DateTime)
+    completed_at = db.Column(db.DateTime)
+    
+    # Target audience
+    target_group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    recipient_count = db.Column(db.Integer, default=0)
+    
+    # Tracking metrics
+    messages_sent = db.Column(db.Integer, default=0)
+    messages_delivered = db.Column(db.Integer, default=0)
+    messages_failed = db.Column(db.Integer, default=0)
+    messages_opened = db.Column(db.Integer, default=0)
+    messages_clicked = db.Column(db.Integer, default=0)
+    messages_bounced = db.Column(db.Integer, default=0)
+    unsubscribes = db.Column(db.Integer, default=0)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    template = db.relationship('Template', backref='campaigns')
+    organization = db.relationship('Organization', backref='message_campaigns')
+    target_group = db.relationship('Group', backref='campaigns')
+    
+    @property
+    def delivery_rate(self):
+        """Calculate delivery rate percentage"""
+        if self.messages_sent == 0:
+            return 0
+        return round((self.messages_delivered / self.messages_sent) * 100, 2)
+    
+    @property
+    def open_rate(self):
+        """Calculate open rate percentage"""
+        if self.messages_delivered == 0:
+            return 0
+        return round((self.messages_opened / self.messages_delivered) * 100, 2)
+    
+    @property
+    def click_rate(self):
+        """Calculate click-through rate percentage"""
+        if self.messages_delivered == 0:
+            return 0
+        return round((self.messages_clicked / self.messages_delivered) * 100, 2)
+
+class MessageDelivery(db.Model):
+    """Individual message delivery tracking"""
+    __tablename__ = 'message_deliveries'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    campaign_id = db.Column(db.Integer, db.ForeignKey('message_campaigns.id'), nullable=False)
+    contact_id = db.Column(db.Integer, db.ForeignKey('contact.id'), nullable=False)
+    
+    # Message details
+    message_id = db.Column(db.String(100))  # External provider message ID
+    channel = db.Column(db.String(20), nullable=False)  # sms, email, whatsapp
+    recipient = db.Column(db.String(200), nullable=False)  # phone/email address
+    
+    # Status tracking
+    status = db.Column(db.String(20), default='queued')  # queued, sent, delivered, failed, bounced
+    sent_at = db.Column(db.DateTime)
+    delivered_at = db.Column(db.DateTime)
+    opened_at = db.Column(db.DateTime)
+    clicked_at = db.Column(db.DateTime)
+    
+    # Error tracking
+    error_code = db.Column(db.String(50))
+    error_message = db.Column(db.Text)
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    campaign = db.relationship('MessageCampaign', backref='deliveries')
+    contact = db.relationship('Contact', backref='message_deliveries')
+
 class MessageLog(db.Model):
     """Message Log model for tracking sent messages"""
     id = db.Column(db.Integer, primary_key=True)

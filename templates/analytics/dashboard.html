@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% set page_title = 'Messaging Analytics' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-light mb-0">📊 Messaging Analytics</h1>
+            <p class="text-muted">Track delivery rates, opens, clicks, and engagement across all channels</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-info dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i data-feather="calendar" width="16" height="16"></i>
+                {% if period == '7' %}Last 7 Days{% elif period == '30' %}Last 30 Days{% elif period == '90' %}Last 90 Days{% else %}Last Year{% endif %}
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="?period=7">Last 7 Days</a></li>
+                <li><a class="dropdown-item" href="?period=30">Last 30 Days</a></li>
+                <li><a class="dropdown-item" href="?period=90">Last 90 Days</a></li>
+                <li><a class="dropdown-item" href="?period=365">Last Year</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary bg-opacity-10 border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="send" class="text-primary" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-primary mb-0">{{ "{:,}".format(total_sent) }}</h3>
+                            <small class="text-muted">Messages Sent</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success bg-opacity-10 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="check-circle" class="text-success" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-success mb-0">{{ delivery_rate }}%</h3>
+                            <small class="text-muted">Delivery Rate</small>
+                            <div class="small text-muted">{{ "{:,}".format(total_delivered) }} delivered</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info bg-opacity-10 border-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="mail-open" class="text-info" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-info mb-0">{{ open_rate }}%</h3>
+                            <small class="text-muted">Open Rate</small>
+                            <div class="small text-muted">{{ "{:,}".format(total_opened) }} opened</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning bg-opacity-10 border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0 me-3">
+                            <i data-feather="mouse-pointer" class="text-warning" width="24" height="24"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-warning mb-0">{{ click_rate }}%</h3>
+                            <small class="text-muted">Click Rate</small>
+                            <div class="small text-muted">{{ "{:,}".format(total_clicked) }} clicks</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Channel Performance -->
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-light mb-0">📱 Channel Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if channel_stats %}
+                        {% for channel, stats in channel_stats.items() %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-light">
+                                    {% if channel == 'email' %}📧 Email
+                                    {% elif channel == 'sms' %}📱 SMS
+                                    {% elif channel == 'whatsapp' %}💬 WhatsApp
+                                    {% else %}{{ channel.title() }}{% endif %}
+                                </span>
+                                <span class="badge bg-primary">{{ "{:,}".format(stats.sent) }} sent</span>
+                            </div>
+                            <div class="row g-2 small">
+                                <div class="col-4">
+                                    <div class="text-success">
+                                        {{ "%.1f"|format((stats.delivered/stats.sent*100) if stats.sent > 0 else 0) }}% delivered
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-info">
+                                        {{ "%.1f"|format((stats.opened/stats.delivered*100) if stats.delivered > 0 else 0) }}% opened
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-warning">
+                                        {{ "%.1f"|format((stats.clicked/stats.delivered*100) if stats.delivered > 0 else 0) }}% clicked
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="bar-chart" class="text-muted mb-3" width="48" height="48"></i>
+                            <p class="text-muted">No channel data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Campaigns -->
+        <div class="col-xl-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-light mb-0">🚀 Recent Campaigns</h5>
+                </div>
+                <div class="card-body">
+                    {% if campaigns %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th class="text-muted">Campaign</th>
+                                        <th class="text-muted">Status</th>
+                                        <th class="text-muted">Metrics</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for campaign in campaigns %}
+                                    <tr onclick="window.location.href='{{ url_for('analytics.campaign_details', campaign_id=campaign.id) }}'" style="cursor: pointer;">
+                                        <td>
+                                            <div>
+                                                <div class="text-light">{{ campaign.name }}</div>
+                                                <small class="text-muted">
+                                                    {% if campaign.template.template_type == 'email' %}📧
+                                                    {% elif campaign.template.template_type == 'sms' %}📱
+                                                    {% elif campaign.template.template_type == 'whatsapp' %}💬
+                                                    {% endif %}
+                                                    {{ campaign.template.name }}
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if campaign.status == 'completed' %}bg-success{% elif campaign.status == 'sending' %}bg-primary{% elif campaign.status == 'scheduled' %}bg-info{% else %}bg-secondary{% endif %}">
+                                                {{ campaign.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="small">
+                                                <div>{{ "{:,}".format(campaign.messages_sent) }} sent</div>
+                                                <div class="text-success">{{ campaign.delivery_rate }}% delivered</div>
+                                                <div class="text-info">{{ campaign.open_rate }}% opened</div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i data-feather="inbox" class="text-muted mb-3" width="48" height="48"></i>
+                            <p class="text-muted">No campaigns found</p>
+                            <a href="{{ url_for('templates.templates') }}" class="btn btn-primary">Create First Campaign</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Failed Deliveries -->
+    {% if failed_deliveries %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title text-light mb-0">⚠️ Recent Delivery Issues</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-muted">Recipient</th>
+                                    <th class="text-muted">Channel</th>
+                                    <th class="text-muted">Error</th>
+                                    <th class="text-muted">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for delivery in failed_deliveries %}
+                                <tr>
+                                    <td class="text-light">{{ delivery.recipient }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ delivery.channel }}</span>
+                                    </td>
+                                    <td class="text-danger">{{ delivery.error_message or 'Unknown error' }}</td>
+                                    <td class="text-muted">{{ delivery.updated_at.strftime('%m/%d %H:%M') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-refresh metrics every 30 seconds
+setInterval(function() {
+    fetch('{{ url_for("analytics.api_metrics") }}')
+        .then(response => response.json())
+        .then(data => {
+            // Update key metrics if needed
+            console.log('Updated metrics:', data);
+        })
+        .catch(error => console.error('Error fetching metrics:', error));
+}, 30000);
+
+feather.replace();
+</script>
+{% endblock %}
