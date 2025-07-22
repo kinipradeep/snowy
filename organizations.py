@@ -296,8 +296,40 @@ def invite_form(org_id):
                          current_members=current_members,
                          team_count=len(current_members))
 
-@organizations_bp.route('/<int:org_id>/invite', methods=['GET', 'POST'])
+# Test routes for messaging services
+@organizations_bp.route('/<int:org_id>/test-sms', methods=['POST'])
 @login_required
+def test_sms(org_id):
+    """Test SMS configuration"""
+    from flask import jsonify
+    try:
+        # Add SMS test logic here
+        return jsonify({'success': True, 'message': 'SMS test functionality not yet implemented'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@organizations_bp.route('/<int:org_id>/test-email', methods=['POST'])
+@login_required  
+def test_email(org_id):
+    """Test email configuration"""
+    from flask import jsonify
+    try:
+        # Add email test logic here
+        return jsonify({'success': True, 'message': 'Email test functionality not yet implemented'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@organizations_bp.route('/<int:org_id>/test-whatsapp', methods=['POST'])
+@login_required
+def test_whatsapp(org_id):
+    """Test WhatsApp configuration"""
+    from flask import jsonify
+    try:
+        # Add WhatsApp test logic here
+        return jsonify({'success': True, 'message': 'WhatsApp test functionality not yet implemented'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
 def invite_user(org_id):
     """Invite user to organization"""
     user = get_current_user()

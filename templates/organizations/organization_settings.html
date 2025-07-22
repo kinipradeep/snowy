@@ -47,7 +47,7 @@
         </div>
         
         <div class="card-body">
-            <form method="POST" action="{{ url_for('organizations.update_settings', org_id=organization.id) }}">
+            <form method="POST" action="{{ url_for('organizations.organization_settings', org_id=organization.id) }}">
                 <div class="tab-content" id="settingsTabContent">
                     
                     <!-- SMS Settings -->
@@ -356,7 +356,7 @@ document.getElementById('emailProvider').addEventListener('change', function() {
 function testSMS() {
     const phone = prompt('Enter a phone number to test SMS:');
     if (phone) {
-        fetch('{{ url_for("organizations.test_sms", org_id=organization.id) }}', {
+        fetch('/organizations/{{ organization.id }}/test-sms', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({phone: phone})
@@ -373,7 +373,7 @@ function testSMS() {
 function testEmail() {
     const email = prompt('Enter an email address to test:');
     if (email) {
-        fetch('{{ url_for("organizations.test_email", org_id=organization.id) }}', {
+        fetch('/organizations/{{ organization.id }}/test-email', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({email: email})
@@ -390,7 +390,7 @@ function testEmail() {
 function testWhatsApp() {
     const phone = prompt('Enter a WhatsApp number to test:');
     if (phone) {
-        fetch('{{ url_for("organizations.test_whatsapp", org_id=organization.id) }}', {
+        fetch('/organizations/{{ organization.id }}/test-whatsapp', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({phone: phone})
