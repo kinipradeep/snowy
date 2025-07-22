@@ -33,7 +33,7 @@ def login():
         
         return render_template('auth/login.html', errors=form.errors)
     
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', errors={})
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -72,7 +72,7 @@ def register():
         
         return render_template('auth/register.html', errors=form.errors)
     
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', errors={})
 
 @auth_bp.route('/logout')
 def logout():
