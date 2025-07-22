@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from app import db
-from models import Template, Organization, User
+from models import Template, Organization, User, Contact
 from forms import TemplateForm
 from utils import login_required, get_current_user, get_current_organization
+from messaging import MessagingService
 import logging
 import json
 
@@ -240,3 +241,119 @@ def delete_template(template_id):
         flash('An error occurred while deleting the template. Please try again.', 'danger')
     
     return redirect(url_for('templates.templates'))
+
+
+@templates_bp.route('/send-message', methods=['GET', 'POST'])
+@login_required
+def send_message():
+    """Send message using templates to contacts"""
+    organization = get_current_organization()
+    if not organization:
+        return redirect(url_for('organizations.organizations'))
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            template_id = request.form.get('template_id')
+            contact_ids_str = request.form.get('contact_ids', '')
+            
+            if not template_id or not contact_ids_str:
+                flash('Please select a template and at least one contact.', 'error')
+                return redirect(url_for('templates.send_message'))
+            
+            # Parse contact IDs
+            contact_ids = [int(cid.strip()) for cid in contact_ids_str.split(',') if cid.strip().isdigit()]
+            
+            if not contact_ids:
+                flash('Invalid contact selection.', 'error')
+                return redirect(url_for('templates.send_message'))
+            
+            # Build custom variables from form
+            custom_variables = {}
+            var_names = request.form.getlist('var_name[]')
+            var_values = request.form.getlist('var_value[]')
+            
+            for name, value in zip(var_names, var_values):
+                if name.strip() and value.strip():
+                    custom_variables[name.strip()] = value.strip()
+            
+            # Initialize messaging service and send
+            messaging_service = MessagingService()
+            results = messaging_service.send_message(
+                template_id=int(template_id),
+                contact_ids=contact_ids,
+                custom_variables=custom_variables,
+                organization_id=organization.id
+            )
+            
+            # Flash result message
+            if results.get('success'):
+                flash(f'Message processed: {results.get("sent", 0)} sent, {results.get("failed", 0)} failed.', 'success')
+            else:
+                flash(f'Error processing messages: {results.get("error", "Unknown error")}', 'error')
+            
+            # Show detailed results
+            return render_template('messaging/message_results.html', results=results)
+            
+        except Exception as e:
+            logging.error(f"Error sending message: {str(e)}")
+            flash(f'Error sending message: {str(e)}', 'error')
+            return redirect(url_for('templates.send_message'))
+    
+    # GET request - show send message form
+    templates = Template.query.filter_by(organization_id=organization.id).order_by(Template.name).all()
+    contacts = Contact.query.filter_by(organization_id=organization.id).order_by(Contact.first_name, Contact.last_name).all()
+    
+    # Get selected template from query param
+    selected_template_id = request.args.get('template_id', type=int)
+    
+    return render_template('messaging/send_message.html', 
+                         templates=templates,
+                         contacts=contacts,
+                         selected_template_id=selected_template_id)
+
+
+@templates_bp.route('/test-email', methods=['POST'])
+@login_required
+def test_email_configuration():
+    """Test email configuration endpoint"""
+    try:
+        data = request.get_json()
+        test_email = data.get('test_email')
+        
+        if not test_email:
+            return jsonify({'success': False, 'error': 'Test email address required'})
+        
+        messaging_service = MessagingService()
+        result = messaging_service.test_email_configuration(test_email)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Error testing email configuration: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@templates_bp.route('/messaging-config')
+@login_required 
+def messaging_config():
+    """Show messaging configuration page"""
+    import os
+    
+    organization = get_current_organization()
+    if not organization:
+        return redirect(url_for('organizations.organizations'))
+    
+    messaging_service = MessagingService()
+    
+    # Check service configurations
+    aws_ses_configured = messaging_service._is_aws_ses_configured()
+    smtp_configured = messaging_service._is_custom_smtp_configured()
+    twilio_configured = bool(os.environ.get('TWILIO_ACCOUNT_SID') and 
+                            os.environ.get('TWILIO_AUTH_TOKEN') and 
+                            os.environ.get('TWILIO_PHONE_NUMBER'))
+    
+    return render_template('messaging/config.html',
+                         aws_ses_configured=aws_ses_configured,
+                         smtp_configured=smtp_configured,
+                         twilio_configured=twilio_configured)

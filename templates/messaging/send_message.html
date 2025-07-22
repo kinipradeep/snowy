@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}Send Message - ContactHub{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('templates.templates') }}">Templates</a></li>
+                    <li class="breadcrumb-item active">Send Message</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Send Message</h1>
+            <p class="text-muted">Send personalized messages to your contacts using templates</p>
+        </div>
+    </div>
+
+    <!-- Message Sending Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="send" width="20" height="20" class="me-2"></i>
+                        Message Configuration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="sendMessageForm" method="POST">
+                        <!-- Template Selection -->
+                        <div class="form-group mb-4">
+                            <label for="template_id" class="form-label fw-semibold">
+                                <i data-feather="file-text" width="16" height="16" class="me-1"></i>
+                                Select Template <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="template_id" name="template_id" required onchange="updateTemplatePreview()">
+                                <option value="">Choose a template...</option>
+                                {% for template in templates %}
+                                <option value="{{ template.id }}" 
+                                        data-channel="{{ template.channel }}"
+                                        data-subject="{{ template.subject or '' }}"
+                                        data-content="{{ template.content or '' }}"
+                                        {% if template.id == selected_template_id %}selected{% endif %}>
+                                    {{ template.name }} ({{ template.channel.upper() }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Contact Selection -->
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-semibold">
+                                <i data-feather="users" width="16" height="16" class="me-1"></i>
+                                Select Recipients <span class="text-danger">*</span>
+                            </label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle mb-3">Available Contacts</h6>
+                                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           id="contactSearch" placeholder="Search contacts..." 
+                                                           onkeyup="filterContacts()">
+                                                </div>
+                                                <div id="availableContacts">
+                                                    {% for contact in contacts %}
+                                                    <div class="form-check contact-item" 
+                                                         data-name="{{ contact.first_name }} {{ contact.last_name }}"
+                                                         data-email="{{ contact.email or '' }}"
+                                                         data-company="{{ contact.company or '' }}">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               value="{{ contact.id }}" 
+                                                               id="contact_{{ contact.id }}"
+                                                               onchange="updateSelectedContacts()">
+                                                        <label class="form-check-label d-flex align-items-center" for="contact_{{ contact.id }}">
+                                                            <div class="user-avatar me-2" style="width: 24px; height: 24px; font-size: 0.6rem;">
+                                                                {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                                                            </div>
+                                                            <div class="flex-grow-1">
+                                                                <div class="fw-medium">{{ contact.first_name }} {{ contact.last_name }}</div>
+                                                                <small class="text-muted">
+                                                                    {% if contact.email %}{{ contact.email }}{% endif %}
+                                                                    {% if contact.company %} • {{ contact.company }}{% endif %}
+                                                                </small>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="card bg-light">
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle mb-3">Selected Recipients (<span id="selectedCount">0</span>)</h6>
+                                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                                                <div id="selectedContacts">
+                                                    <div class="text-muted small text-center py-3">
+                                                        <i data-feather="user-plus" width="24" height="24" class="mb-2"></i>
+                                                        <div>No contacts selected</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="contact_ids" id="contact_ids" required>
+                        </div>
+
+                        <!-- Custom Variables -->
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-semibold">
+                                <i data-feather="edit-3" width="16" height="16" class="me-1"></i>
+                                Custom Variables (Optional)
+                            </label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div id="customVariables">
+                                        <div class="row mb-3">
+                                            <div class="col-md-4">
+                                                <input type="text" class="form-control" placeholder="Variable name" name="var_name[]">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <input type="text" class="form-control" placeholder="Variable value" name="var_value[]">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addVariable()">
+                                                    <i data-feather="plus" width="14" height="14"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        Add custom variables to personalize your message. Use {variable_name} in your template.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i data-feather="send" width="20" height="20" class="me-2"></i>
+                                Send Message
+                            </button>
+                            <a href="{{ url_for('templates.templates') }}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Preview -->
+        <div class="col-lg-4">
+            <div class="card position-sticky" style="top: 100px;">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="eye" width="20" height="20" class="me-2"></i>
+                        Template Preview
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="templatePreview">
+                        <div class="text-center py-4 text-muted">
+                            <i data-feather="file-text" width="48" height="48" class="mb-3"></i>
+                            <div>Select a template to see preview</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Variables -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title">
+                        <i data-feather="code" width="16" height="16" class="me-2"></i>
+                        Available Variables
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <small class="text-muted d-block mb-2">Contact Variables:</small>
+                            <div class="d-flex flex-wrap gap-1">
+                                <code class="small">{first_name}</code>
+                                <code class="small">{last_name}</code>
+                                <code class="small">{full_name}</code>
+                                <code class="small">{email}</code>
+                                <code class="small">{phone}</code>
+                                <code class="small">{company}</code>
+                                <code class="small">{job_title}</code>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">Click to copy to clipboard</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status"></div>
+                <h5>Sending Messages...</h5>
+                <p class="text-muted mb-0">Please wait while we send your messages to the selected contacts.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let selectedContactIds = [];
+
+function updateTemplatePreview() {
+    const select = document.getElementById('template_id');
+    const preview = document.getElementById('templatePreview');
+    const option = select.options[select.selectedIndex];
+    
+    if (!option.value) {
+        preview.innerHTML = `
+            <div class="text-center py-4 text-muted">
+                <i data-feather="file-text" width="48" height="48" class="mb-3"></i>
+                <div>Select a template to see preview</div>
+            </div>`;
+        feather.replace();
+        return;
+    }
+    
+    const channel = option.dataset.channel;
+    const subject = option.dataset.subject;
+    const content = option.dataset.content;
+    
+    let channelIcon = 'message-square';
+    let channelClass = 'bg-primary';
+    
+    if (channel === 'email') {
+        channelIcon = 'mail';
+        channelClass = 'bg-info';
+    } else if (channel === 'sms') {
+        channelIcon = 'message-circle';
+        channelClass = 'bg-success';
+    } else if (channel === 'whatsapp') {
+        channelIcon = 'message-square';
+        channelClass = 'bg-success';
+    }
+    
+    preview.innerHTML = `
+        <div class="mb-3">
+            <span class="badge ${channelClass} d-flex align-items-center gap-1" style="width: fit-content;">
+                <i data-feather="${channelIcon}" width="14" height="14"></i>
+                ${channel.toUpperCase()}
+            </span>
+        </div>
+        ${subject ? `<div class="mb-3"><strong>Subject:</strong> ${subject}</div>` : ''}
+        <div class="mb-3">
+            <strong>Content:</strong>
+            <div class="border rounded p-3 mt-2" style="background: var(--bg-surface-secondary);">
+                ${content.replace(/\\n/g, '<br>')}
+            </div>
+        </div>
+        <small class="text-muted">Variables like {first_name} will be automatically replaced with contact data.</small>
+    `;
+    
+    feather.replace();
+}
+
+function filterContacts() {
+    const search = document.getElementById('contactSearch').value.toLowerCase();
+    const contacts = document.querySelectorAll('.contact-item');
+    
+    contacts.forEach(contact => {
+        const name = contact.dataset.name.toLowerCase();
+        const email = contact.dataset.email.toLowerCase();
+        const company = contact.dataset.company.toLowerCase();
+        
+        if (name.includes(search) || email.includes(search) || company.includes(search)) {
+            contact.style.display = 'block';
+        } else {
+            contact.style.display = 'none';
+        }
+    });
+}
+
+function updateSelectedContacts() {
+    const checkboxes = document.querySelectorAll('#availableContacts .form-check-input:checked');
+    const selectedContainer = document.getElementById('selectedContacts');
+    const countSpan = document.getElementById('selectedCount');
+    const hiddenInput = document.getElementById('contact_ids');
+    
+    selectedContactIds = Array.from(checkboxes).map(cb => cb.value);
+    countSpan.textContent = selectedContactIds.length;
+    hiddenInput.value = selectedContactIds.join(',');
+    
+    if (selectedContactIds.length === 0) {
+        selectedContainer.innerHTML = `
+            <div class="text-muted small text-center py-3">
+                <i data-feather="user-plus" width="24" height="24" class="mb-2"></i>
+                <div>No contacts selected</div>
+            </div>`;
+    } else {
+        selectedContainer.innerHTML = Array.from(checkboxes).map(cb => {
+            const contactItem = cb.closest('.contact-item');
+            const name = contactItem.dataset.name;
+            const email = contactItem.dataset.email;
+            const company = contactItem.dataset.company;
+            
+            return `
+                <div class="d-flex align-items-center mb-2 p-2 bg-white rounded border">
+                    <div class="user-avatar me-2" style="width: 20px; height: 20px; font-size: 0.5rem;">
+                        ${name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-medium small">${name}</div>
+                        <small class="text-muted">${email}${company ? ' • ' + company : ''}</small>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeContact('${cb.value}')">
+                        <i data-feather="x" width="12" height="12"></i>
+                    </button>
+                </div>`;
+        }).join('');
+    }
+    
+    feather.replace();
+}
+
+function removeContact(contactId) {
+    const checkbox = document.getElementById(`contact_${contactId}`);
+    checkbox.checked = false;
+    updateSelectedContacts();
+}
+
+function addVariable() {
+    const container = document.getElementById('customVariables');
+    const newVar = document.createElement('div');
+    newVar.className = 'row mb-3';
+    newVar.innerHTML = `
+        <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Variable name" name="var_name[]">
+        </div>
+        <div class="col-md-6">
+            <input type="text" class="form-control" placeholder="Variable value" name="var_value[]">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeVariable(this)">
+                <i data-feather="minus" width="14" height="14"></i>
+            </button>
+        </div>
+    `;
+    container.appendChild(newVar);
+    feather.replace();
+}
+
+function removeVariable(button) {
+    button.closest('.row').remove();
+}
+
+// Copy variable to clipboard
+document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'CODE') {
+        navigator.clipboard.writeText(e.target.textContent).then(() => {
+            // Show tooltip or notification
+            const original = e.target.textContent;
+            e.target.textContent = 'Copied!';
+            e.target.classList.add('bg-success', 'text-white');
+            setTimeout(() => {
+                e.target.textContent = original;
+                e.target.classList.remove('bg-success', 'text-white');
+            }, 1000);
+        });
+    }
+});
+
+// Form submission
+document.getElementById('sendMessageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    if (selectedContactIds.length === 0) {
+        alert('Please select at least one contact.');
+        return;
+    }
+    
+    const templateId = document.getElementById('template_id').value;
+    if (!templateId) {
+        alert('Please select a template.');
+        return;
+    }
+    
+    // Show loading modal
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    
+    // Submit form
+    this.submit();
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateTemplatePreview();
+});
+</script>
+{% endblock %}

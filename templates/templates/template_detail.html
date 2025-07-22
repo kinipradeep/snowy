@@ -101,6 +101,9 @@
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
+                    <a href="{{ url_for('templates.send_message', template_id=template.id) }}" class="btn btn-primary">
+                        <i data-feather="send" class="me-2"></i>Send Message
+                    </a>
                     <a href="{{ url_for('templates.edit_template', template_id=template.id) }}" class="btn btn-outline-primary">
                         <i data-feather="edit" class="me-2"></i>Edit Template
                     </a>
