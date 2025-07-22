@@ -1,6 +1,28 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
+import string
+
+class Organization(db.Model):
+    """Organization model for multi-tenant support"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    members = db.relationship('UserRole', backref='organization', lazy=True, cascade='all, delete-orphan')
+    contacts = db.relationship('Contact', backref='organization', lazy=True, cascade='all, delete-orphan')
+    groups = db.relationship('Group', backref='organization', lazy=True, cascade='all, delete-orphan')
+    templates = db.relationship('Template', backref='organization', lazy=True, cascade='all, delete-orphan')
+    invitations = db.relationship('OrganizationInvitation', backref='organization', lazy=True, cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<Organization {self.name}>'
 
 class User(db.Model):
     """User model for authentication and user management"""
@@ -16,9 +38,9 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    contacts = db.relationship('Contact', backref='user', lazy=True, cascade='all, delete-orphan')
-    groups = db.relationship('Group', backref='user', lazy=True, cascade='all, delete-orphan')
-    templates = db.relationship('Template', backref='user', lazy=True, cascade='all, delete-orphan')
+    owned_organizations = db.relationship('Organization', backref='owner', lazy=True)
+    organization_roles = db.relationship('UserRole', backref='user', lazy=True, cascade='all, delete-orphan')
+    invitations = db.relationship('OrganizationInvitation', backref='invitee', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Set password hash"""
@@ -32,20 +54,72 @@ class User(db.Model):
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
     
+    def get_current_organization(self):
+        """Get user's current active organization"""
+        active_role = UserRole.query.filter_by(user_id=self.id, is_active=True).first()
+        return active_role.organization if active_role else None
+    
+    def get_organization_role(self, organization_id):
+        """Get user's role in a specific organization"""
+        role = UserRole.query.filter_by(user_id=self.id, organization_id=organization_id).first()
+        return role.role if role else None
+    
     def __repr__(self):
         return f'<User {self.username}>'
+
+class UserRole(db.Model):
+    """User roles within organizations"""
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='member')  # owner, admin, member, viewer
+    is_active = db.Column(db.Boolean, default=True)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (db.UniqueConstraint('user_id', 'organization_id'),)
+    
+    def __repr__(self):
+        return f'<UserRole {self.user.username} - {self.organization.name} - {self.role}>'
+
+class OrganizationInvitation(db.Model):
+    """Organization invitations for new members"""
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default='member')
+    token = db.Column(db.String(100), nullable=False, unique=True)
+    invited_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    invitee_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # Set when user exists
+    status = db.Column(db.String(20), default='pending')  # pending, accepted, declined, expired
+    expires_at = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    invited_by = db.relationship('User', foreign_keys=[invited_by_id])
+    
+    def generate_token(self):
+        """Generate unique invitation token"""
+        self.token = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+        self.expires_at = datetime.utcnow() + timedelta(days=7)
+    
+    def is_expired(self):
+        return datetime.utcnow() > self.expires_at
+    
+    def __repr__(self):
+        return f'<OrganizationInvitation {self.email} -> {self.organization.name}>'
 
 class Group(db.Model):
     """Group model for organizing contacts"""
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
     contacts = db.relationship('Contact', backref='group', lazy=True)
+    created_by = db.relationship('User', backref='created_groups')
     
     def __repr__(self):
         return f'<Group {self.name}>'
@@ -68,8 +142,12 @@ class Contact(db.Model):
     notes = db.Column(db.Text)
     
     # Foreign keys
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     group_id = db.Column(db.Integer, db.ForeignKey('group.id'))
+    
+    # Relationships
+    created_by = db.relationship('User', backref='created_contacts')
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -90,9 +168,13 @@ class Template(db.Model):
     subject = db.Column(db.String(200))  # For email templates
     content = db.Column(db.Text, nullable=False)
     variables = db.Column(db.Text)  # JSON string of available variables
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    created_by = db.relationship('User', backref='created_templates')
     
     def __repr__(self):
         return f'<Template {self.name}>'

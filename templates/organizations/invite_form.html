@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Invite User - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i data-feather="user-plus" class="me-2"></i>Invite User
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control {% if errors.email %}is-invalid{% endif %}" 
+                                   id="email" name="email" value="{{ request.form.email or '' }}" required>
+                            {% if errors.email %}
+                            <div class="invalid-feedback">{{ errors.email }}</div>
+                            {% endif %}
+                            <div class="form-text">Enter the email address of the person you want to invite</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select {% if errors.role %}is-invalid{% endif %}" id="role" name="role" required>
+                                <option value="">Select a role</option>
+                                <option value="member" {{ 'selected' if request.form.role == 'member' }}>Member</option>
+                                <option value="admin" {{ 'selected' if request.form.role == 'admin' }}>Admin</option>
+                            </select>
+                            {% if errors.role %}
+                            <div class="invalid-feedback">{{ errors.role }}</div>
+                            {% endif %}
+                            <div class="form-text">
+                                <strong>Member:</strong> Can view and manage contacts, groups, and templates<br>
+                                <strong>Admin:</strong> Can also invite users and manage organization settings
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="send" class="me-2"></i>Send Invitation
+                            </button>
+                            <a href="{{ url_for('organizations.organization_detail', org_id=org_id) }}" class="btn btn-secondary">
+                                <i data-feather="x" class="me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

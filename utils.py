@@ -49,6 +49,36 @@ def get_current_user():
         return User.query.get(session['user_id'])
     return None
 
+def get_current_organization():
+    """Get current active organization for user"""
+    user = get_current_user()
+    if user:
+        return user.get_current_organization()
+    return None
+
+def organization_required(f):
+    """Decorator to require user to be in an organization"""
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'warning')
+            return redirect(url_for('auth.login'))
+        
+        user = get_current_user()
+        if not user or not user.is_active:
+            session.clear()
+            flash('Your session has expired. Please log in again.', 'warning')
+            return redirect(url_for('auth.login'))
+        
+        organization = get_current_organization()
+        if not organization:
+            flash('Please select an organization to continue.', 'warning')
+            return redirect(url_for('organizations.organizations'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 def format_phone(phone):
     """Format phone number for display"""
     if not phone:

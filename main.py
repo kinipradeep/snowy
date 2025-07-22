@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, session, request
 from app import app, db
-from models import User, Contact, Group, Template
-from utils import login_required
+from models import User, Contact, Group, Template, Organization, UserRole
+from utils import login_required, get_current_user, get_current_organization
 import logging
 
 @app.route('/')
@@ -10,20 +10,27 @@ def index():
     if 'user_id' not in session:
         return render_template('index.html', logged_in=False)
     
-    user = User.query.get(session['user_id'])
+    user = get_current_user()
     if not user:
         session.clear()
         return render_template('index.html', logged_in=False)
     
-    # Dashboard data for logged in users
-    total_contacts = Contact.query.filter_by(user_id=user.id).count()
-    total_groups = Group.query.filter_by(user_id=user.id).count()
-    total_templates = Template.query.filter_by(user_id=user.id).count()
-    recent_contacts = Contact.query.filter_by(user_id=user.id).order_by(Contact.created_at.desc()).limit(5).all()
+    # Check if user has any organizations
+    organization = get_current_organization()
+    if not organization:
+        # Redirect to organization selection if no active organization
+        return redirect(url_for('organizations.organizations'))
+    
+    # Dashboard data for logged in users within current organization
+    total_contacts = Contact.query.filter_by(organization_id=organization.id).count()
+    total_groups = Group.query.filter_by(organization_id=organization.id).count()
+    total_templates = Template.query.filter_by(organization_id=organization.id).count()
+    recent_contacts = Contact.query.filter_by(organization_id=organization.id).order_by(Contact.created_at.desc()).limit(5).all()
     
     return render_template('index.html', 
                          logged_in=True, 
                          user=user,
+                         organization=organization,
                          total_contacts=total_contacts,
                          total_groups=total_groups,
                          total_templates=total_templates,

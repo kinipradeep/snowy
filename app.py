@@ -36,12 +36,14 @@ def create_app():
     from groups import groups_bp
     from templates_mgmt import templates_bp
     from users import users_bp
+    from organizations import organizations_bp
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(contacts_bp, url_prefix='/contacts')
     app.register_blueprint(groups_bp, url_prefix='/groups')
     app.register_blueprint(templates_bp, url_prefix='/templates')
     app.register_blueprint(users_bp, url_prefix='/users')
+    app.register_blueprint(organizations_bp, url_prefix='/organizations')
     
     # Import main routes to register them with the app
     import main

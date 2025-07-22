@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}My Organizations - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i data-feather="users" class="me-2"></i>My Organizations
+        </h1>
+        <a href="{{ url_for('organizations.new_organization') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-2"></i>New Organization
+        </a>
+    </div>
+
+    {% if user_roles %}
+    <div class="row">
+        {% for user_role in user_roles %}
+        <div class="col-md-6 col-lg-4 mb-3">
+            <div class="card {% if user_role.is_active %}border-primary{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ user_role.organization.name }}</h5>
+                        {% if user_role.is_active %}
+                        <span class="badge bg-primary">Active</span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-muted small mb-2">
+                        <span class="badge bg-secondary">{{ user_role.role.title() }}</span>
+                    </p>
+                    
+                    {% if user_role.organization.description %}
+                    <p class="card-text">{{ user_role.organization.description }}</p>
+                    {% endif %}
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('organizations.organization_detail', org_id=user_role.organization.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i data-feather="settings" class="me-1"></i>Manage
+                        </a>
+                        
+                        {% if not user_role.is_active %}
+                        <a href="{{ url_for('organizations.switch_organization', org_id=user_role.organization.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i data-feather="log-in" class="me-1"></i>Switch
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <i data-feather="users" class="text-muted mb-3" style="width: 64px; height: 64px;"></i>
+        <h3 class="text-muted">No Organizations</h3>
+        <p class="text-muted mb-4">You're not a member of any organizations yet.</p>
+        <a href="{{ url_for('organizations.new_organization') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-2"></i>Create Your First Organization
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

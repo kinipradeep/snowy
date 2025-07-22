@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from datetime import datetime, timedelta
 from app import db
-from models import User, PasswordResetToken
+from models import User, PasswordResetToken, Organization, UserRole
 from forms import LoginForm, RegisterForm, PasswordResetRequestForm, PasswordResetForm
 from utils import generate_token
 import logging
@@ -62,6 +62,26 @@ def register():
             
             try:
                 db.session.add(user)
+                db.session.flush()  # Flush to get the user ID
+                
+                # Create default organization for the user
+                org_name = f"{user.full_name}'s Organization"
+                organization = Organization(
+                    name=org_name,
+                    description=f"Default organization for {user.full_name}",
+                    owner_id=user.id
+                )
+                db.session.add(organization)
+                db.session.flush()  # Flush to get organization ID
+                
+                # Add user as owner of the organization
+                user_role = UserRole(
+                    user_id=user.id,
+                    organization_id=organization.id,
+                    role='owner'
+                )
+                db.session.add(user_role)
+                
                 db.session.commit()
                 flash('Registration successful! Please log in.', 'success')
                 return redirect(url_for('auth.login'))
