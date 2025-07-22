@@ -133,9 +133,9 @@ def save_all_messaging_config(org_id):
 
 
 
-@organizations_bp.route('/<int:org_id>/test-sms-config', methods=['POST'])
+@organizations_bp.route('/<int:org_id>/test-sms', methods=['POST'])
 @login_required
-def test_sms_config(org_id):
+def test_sms(org_id):
     """Test SMS configuration"""
     try:
         data = request.get_json()

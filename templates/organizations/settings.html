@@ -300,7 +300,7 @@ function testSmsConfig() {
     const phone = prompt('Enter a test phone number (with country code):');
     if (!phone) return;
     
-    fetch('{{ url_for("organizations.test_sms_config", org_id=organization.id) }}', {
+    fetch('{{ url_for("organizations.test_sms", org_id=organization.id) }}', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({test_phone: phone})
