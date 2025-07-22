@@ -24,7 +24,7 @@
             <div class="card">
                 <div class="card-header">
                     <h5 class="card-title mb-0">
-                        <i data-feather="building" width="20" height="20" class="me-2"></i>
+                        <i data-feather="home" width="20" height="20" class="me-2"></i>
                         Organization Information
                     </h5>
                 </div>
@@ -176,9 +176,9 @@
             Back to Organizations
         </a>
         {% if user_role == 'owner' or user_role == 'admin' %}
-        <a href="{{ url_for('organizations.edit_organization', org_id=organization.id) }}" class="btn btn-outline-primary">
-            <i data-feather="edit" width="16" height="16" class="me-2"></i>
-            Edit Organization
+        <a href="{{ url_for('organizations.organization_settings', org_id=organization.id) }}" class="btn btn-outline-primary">
+            <i data-feather="settings" width="16" height="16" class="me-2"></i>
+            Organization Settings
         </a>
         {% endif %}
     </div>

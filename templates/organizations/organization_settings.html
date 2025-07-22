@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Organization Settings - {{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('organizations.organizations') }}">Organizations</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('organizations.organization_detail', org_id=organization.id) }}">{{ organization.name }}</a></li>
+                    <li class="breadcrumb-item active">Settings</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Organization Settings</h1>
+            <p class="text-muted">Configure messaging providers and organization preferences</p>
+        </div>
+    </div>
+
+    <!-- Settings Tabs -->
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="sms-tab" data-bs-toggle="tab" data-bs-target="#sms" type="button" role="tab">
+                        <i data-feather="message-square" width="16" height="16" class="me-2"></i>SMS Settings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab">
+                        <i data-feather="mail" width="16" height="16" class="me-2"></i>Email Settings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp" type="button" role="tab">
+                        <i data-feather="message-circle" width="16" height="16" class="me-2"></i>WhatsApp Settings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                        <i data-feather="settings" width="16" height="16" class="me-2"></i>General
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('organizations.update_settings', org_id=organization.id) }}">
+                <div class="tab-content" id="settingsTabContent">
+                    
+                    <!-- SMS Settings -->
+                    <div class="tab-pane fade show active" id="sms" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="mb-3">SMS Provider Configuration</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">SMS Provider</label>
+                                    <select name="sms_provider" class="form-select" id="smsProvider">
+                                        <option value="twilio" {% if config.sms_provider == 'twilio' %}selected{% endif %}>Twilio</option>
+                                        <option value="textlocal" {% if config.sms_provider == 'textlocal' %}selected{% endif %}>TextLocal</option>
+                                        <option value="msg91" {% if config.sms_provider == 'msg91' %}selected{% endif %}>MSG91</option>
+                                        <option value="clickatell" {% if config.sms_provider == 'clickatell' %}selected{% endif %}>Clickatell</option>
+                                        <option value="custom" {% if config.sms_provider == 'custom' %}selected{% endif %}>Custom HTTP API</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3" id="customSmsUrl" style="display: {% if config.sms_provider == 'custom' %}block{% else %}none{% endif %};">
+                                    <label class="form-label">API URL</label>
+                                    <input type="url" name="sms_api_url" class="form-control" value="{{ config.sms_api_url or '' }}" placeholder="https://api.example.com/sms/send">
+                                    <div class="form-text">Full URL for your custom SMS API endpoint</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">API Key</label>
+                                    <input type="password" name="sms_api_key" class="form-control" value="{{ config.sms_api_key or '' }}" placeholder="Your SMS provider API key">
+                                </div>
+                                
+                                <div class="mb-3" id="smsUsername" style="display: {% if config.sms_provider in ['textlocal', 'msg91'] %}block{% else %}none{% endif %};">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" name="sms_username" class="form-control" value="{{ config.sms_username or '' }}" placeholder="Username (for TextLocal, MSG91)">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Sender ID</label>
+                                    <input type="text" name="sms_sender_id" class="form-control" value="{{ config.sms_sender_id or '' }}" placeholder="Your SMS sender ID">
+                                    <div class="form-text">The sender name/number that will appear on SMS messages</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">SMS Status</h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge {% if config.sms_api_key %}bg-success{% else %}bg-secondary{% endif %} me-2">
+                                                {% if config.sms_api_key %}Configured{% else %}Not Configured{% endif %}
+                                            </div>
+                                        </div>
+                                        <p class="card-text small">
+                                            {% if config.sms_provider %}
+                                                Provider: <strong>{{ config.sms_provider.title() }}</strong><br>
+                                            {% endif %}
+                                            Configure your SMS provider to send text messages.
+                                        </p>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testSMS()">
+                                            <i data-feather="send" width="14" height="14" class="me-1"></i>Test SMS
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Settings -->
+                    <div class="tab-pane fade" id="email" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="mb-3">Email Provider Configuration</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Email Provider</label>
+                                    <select name="email_provider" class="form-select" id="emailProvider">
+                                        <option value="smtp" {% if config.email_provider == 'smtp' %}selected{% endif %}>Custom SMTP</option>
+                                        <option value="aws_ses" {% if config.email_provider == 'aws_ses' %}selected{% endif %}>Amazon SES</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- SMTP Settings -->
+                                <div id="smtpSettings" style="display: {% if config.email_provider == 'smtp' %}block{% else %}none{% endif %};">
+                                    <div class="row">
+                                        <div class="col-md-8 mb-3">
+                                            <label class="form-label">SMTP Host</label>
+                                            <input type="text" name="smtp_host" class="form-control" value="{{ config.smtp_host or '' }}" placeholder="smtp.gmail.com">
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Port</label>
+                                            <input type="number" name="smtp_port" class="form-control" value="{{ config.smtp_port or 587 }}" placeholder="587">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Username</label>
+                                        <input type="email" name="smtp_username" class="form-control" value="{{ config.smtp_username or '' }}" placeholder="your-email@domain.com">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Password</label>
+                                        <input type="password" name="smtp_password" class="form-control" value="{{ config.smtp_password or '' }}" placeholder="Your email password or app password">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="smtp_use_tls" id="smtpTls" {% if config.smtp_use_tls %}checked{% endif %}>
+                                            <label class="form-check-label" for="smtpTls">Use TLS/STARTTLS</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- AWS SES Settings -->
+                                <div id="awsSettings" style="display: {% if config.email_provider == 'aws_ses' %}block{% else %}none{% endif %};">
+                                    <div class="mb-3">
+                                        <label class="form-label">AWS Access Key ID</label>
+                                        <input type="text" name="aws_access_key_id" class="form-control" value="{{ config.aws_access_key_id or '' }}" placeholder="AKIA...">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">AWS Secret Access Key</label>
+                                        <input type="password" name="aws_secret_access_key" class="form-control" value="{{ config.aws_secret_access_key or '' }}" placeholder="Your AWS secret key">
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">AWS Region</label>
+                                            <select name="aws_region" class="form-select">
+                                                <option value="us-east-1" {% if config.aws_region == 'us-east-1' %}selected{% endif %}>us-east-1 (N. Virginia)</option>
+                                                <option value="us-west-2" {% if config.aws_region == 'us-west-2' %}selected{% endif %}>us-west-2 (Oregon)</option>
+                                                <option value="eu-west-1" {% if config.aws_region == 'eu-west-1' %}selected{% endif %}>eu-west-1 (Ireland)</option>
+                                                <option value="ap-south-1" {% if config.aws_region == 'ap-south-1' %}selected{% endif %}>ap-south-1 (Mumbai)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Sender Email</label>
+                                            <input type="email" name="aws_sender_email" class="form-control" value="{{ config.aws_sender_email or '' }}" placeholder="noreply@yourdomain.com">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Email Status</h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge {% if config.smtp_host or config.aws_access_key_id %}bg-success{% else %}bg-secondary{% endif %} me-2">
+                                                {% if config.smtp_host or config.aws_access_key_id %}Configured{% else %}Not Configured{% endif %}
+                                            </div>
+                                        </div>
+                                        <p class="card-text small">
+                                            Provider: <strong>{{ config.email_provider.replace('_', ' ').title() if config.email_provider else 'None' }}</strong><br>
+                                            Configure your email provider to send email messages.
+                                        </p>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testEmail()">
+                                            <i data-feather="send" width="14" height="14" class="me-1"></i>Test Email
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- WhatsApp Settings -->
+                    <div class="tab-pane fade" id="whatsapp" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="mb-3">WhatsApp API Configuration</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">WhatsApp API URL</label>
+                                    <input type="url" name="whatsapp_api_url" class="form-control" value="{{ config.whatsapp_api_url or '' }}" placeholder="https://graph.facebook.com/v17.0/YOUR_PHONE_NUMBER_ID/messages">
+                                    <div class="form-text">WhatsApp Business API endpoint URL</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">API Key / Access Token</label>
+                                    <input type="password" name="whatsapp_api_key" class="form-control" value="{{ config.whatsapp_api_key or '' }}" placeholder="Your WhatsApp API access token">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">WhatsApp Phone Number</label>
+                                    <input type="tel" name="whatsapp_phone_number" class="form-control" value="{{ config.whatsapp_phone_number or '' }}" placeholder="+1234567890">
+                                    <div class="form-text">Your registered WhatsApp Business phone number</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Webhook URL (Optional)</label>
+                                    <input type="url" name="whatsapp_webhook_url" class="form-control" value="{{ config.whatsapp_webhook_url or '' }}" placeholder="https://yourdomain.com/webhook/whatsapp">
+                                    <div class="form-text">URL to receive WhatsApp webhook events</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">WhatsApp Status</h6>
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="badge {% if config.whatsapp_api_key %}bg-success{% else %}bg-secondary{% endif %} me-2">
+                                                {% if config.whatsapp_api_key %}Configured{% else %}Not Configured{% endif %}
+                                            </div>
+                                        </div>
+                                        <p class="card-text small">
+                                            {% if config.whatsapp_phone_number %}
+                                                Phone: <strong>{{ config.whatsapp_phone_number }}</strong><br>
+                                            {% endif %}
+                                            Configure WhatsApp Business API to send WhatsApp messages.
+                                        </p>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testWhatsApp()">
+                                            <i data-feather="send" width="14" height="14" class="me-1"></i>Test WhatsApp
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- General Settings -->
+                    <div class="tab-pane fade" id="general" role="tabpanel">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h5 class="mb-3">General Settings</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Default Sender Name</label>
+                                    <input type="text" name="default_sender_name" class="form-control" value="{{ config.default_sender_name or organization.name }}" placeholder="{{ organization.name }}">
+                                    <div class="form-text">The default sender name for all outgoing messages</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="configActive" {% if config.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="configActive">
+                                            Enable messaging services for this organization
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Configuration Status</h6>
+                                        <div class="small">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>SMS:</span>
+                                                <span class="badge {% if config.sms_api_key %}bg-success{% else %}bg-secondary{% endif %} badge-sm">
+                                                    {% if config.sms_api_key %}Ready{% else %}Not Setup{% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Email:</span>
+                                                <span class="badge {% if config.smtp_host or config.aws_access_key_id %}bg-success{% else %}bg-secondary{% endif %} badge-sm">
+                                                    {% if config.smtp_host or config.aws_access_key_id %}Ready{% else %}Not Setup{% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>WhatsApp:</span>
+                                                <span class="badge {% if config.whatsapp_api_key %}bg-success{% else %}bg-secondary{% endif %} badge-sm">
+                                                    {% if config.whatsapp_api_key %}Ready{% else %}Not Setup{% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <a href="{{ url_for('organizations.organization_detail', org_id=organization.id) }}" class="btn btn-secondary">
+                        <i data-feather="arrow-left" width="16" height="16" class="me-2"></i>Back
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-feather="save" width="16" height="16" class="me-2"></i>Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Show/hide provider-specific fields
+document.getElementById('smsProvider').addEventListener('change', function() {
+    const customUrl = document.getElementById('customSmsUrl');
+    const username = document.getElementById('smsUsername');
+    
+    customUrl.style.display = this.value === 'custom' ? 'block' : 'none';
+    username.style.display = ['textlocal', 'msg91'].includes(this.value) ? 'block' : 'none';
+});
+
+document.getElementById('emailProvider').addEventListener('change', function() {
+    const smtpSettings = document.getElementById('smtpSettings');
+    const awsSettings = document.getElementById('awsSettings');
+    
+    smtpSettings.style.display = this.value === 'smtp' ? 'block' : 'none';
+    awsSettings.style.display = this.value === 'aws_ses' ? 'block' : 'none';
+});
+
+// Test functions
+function testSMS() {
+    const phone = prompt('Enter a phone number to test SMS:');
+    if (phone) {
+        fetch('{{ url_for("organizations.test_sms", org_id=organization.id) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({phone: phone})
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                alert('Test SMS sent successfully!');
+            } else {
+                alert('Failed to send test SMS: ' + data.error);
+            }
+        });
+    }
+}
+
+function testEmail() {
+    const email = prompt('Enter an email address to test:');
+    if (email) {
+        fetch('{{ url_for("organizations.test_email", org_id=organization.id) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email})
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                alert('Test email sent successfully!');
+            } else {
+                alert('Failed to send test email: ' + data.error);
+            }
+        });
+    }
+}
+
+function testWhatsApp() {
+    const phone = prompt('Enter a WhatsApp number to test:');
+    if (phone) {
+        fetch('{{ url_for("organizations.test_whatsapp", org_id=organization.id) }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({phone: phone})
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                alert('Test WhatsApp message sent successfully!');
+            } else {
+                alert('Failed to send test WhatsApp: ' + data.error);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

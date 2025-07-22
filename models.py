@@ -79,6 +79,34 @@ class UserRole(db.Model):
     
     __table_args__ = (db.UniqueConstraint('user_id', 'organization_id'),)
     
+    def can_create_contacts(self):
+        """Check if user can create contacts"""
+        return self.role in ['owner', 'admin', 'member']
+    
+    def can_update_contacts(self):
+        """Check if user can update contacts"""
+        return self.role in ['owner', 'admin', 'member']
+    
+    def can_delete_contacts(self):
+        """Check if user can delete contacts"""
+        return self.role in ['owner', 'admin']
+    
+    def can_create_templates(self):
+        """Check if user can create templates"""
+        return self.role in ['owner', 'admin', 'member']
+    
+    def can_send_messages(self):
+        """Check if user can send messages"""
+        return self.role in ['owner', 'admin', 'member']
+    
+    def can_manage_organization(self):
+        """Check if user can manage organization settings"""
+        return self.role in ['owner', 'admin']
+    
+    def can_invite_users(self):
+        """Check if user can invite users"""
+        return self.role in ['owner', 'admin']
+    
     def __repr__(self):
         return f'<UserRole {self.user.username} - {self.organization.name} - {self.role}>'
 
@@ -107,6 +135,50 @@ class OrganizationInvitation(db.Model):
     
     def __repr__(self):
         return f'<OrganizationInvitation {self.email} -> {self.organization.name}>'
+
+class OrganizationConfig(db.Model):
+    """Organization-level configuration for messaging providers"""
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False, unique=True)
+    
+    # SMS Configuration
+    sms_provider = db.Column(db.String(50), default='twilio')  # twilio, textlocal, msg91, clickatell, custom
+    sms_api_url = db.Column(db.String(255))  # For custom SMS providers
+    sms_api_key = db.Column(db.String(255))
+    sms_username = db.Column(db.String(100))  # For TextLocal, etc.
+    sms_sender_id = db.Column(db.String(50))
+    
+    # Email Configuration
+    email_provider = db.Column(db.String(50), default='smtp')  # smtp, aws_ses
+    smtp_host = db.Column(db.String(255))
+    smtp_port = db.Column(db.Integer, default=587)
+    smtp_username = db.Column(db.String(255))
+    smtp_password = db.Column(db.String(255))
+    smtp_use_tls = db.Column(db.Boolean, default=True)
+    
+    # AWS SES Configuration
+    aws_access_key_id = db.Column(db.String(255))
+    aws_secret_access_key = db.Column(db.String(255))
+    aws_region = db.Column(db.String(50), default='us-east-1')
+    aws_sender_email = db.Column(db.String(255))
+    
+    # WhatsApp Configuration
+    whatsapp_api_url = db.Column(db.String(255))
+    whatsapp_api_key = db.Column(db.String(255))
+    whatsapp_phone_number = db.Column(db.String(50))
+    whatsapp_webhook_url = db.Column(db.String(255))
+    
+    # General Settings
+    default_sender_name = db.Column(db.String(100))
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationship
+    organization = db.relationship('Organization', backref=db.backref('config', uselist=False))
+    
+    def __repr__(self):
+        return f'<OrganizationConfig {self.organization.name}>'
 
 class Group(db.Model):
     """Group model for organizing contacts"""
