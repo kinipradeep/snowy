@@ -12,6 +12,9 @@
         <div class="hero-content text-center">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
+                    <div class="mb-4 fade-in">
+                        <img src="{{ url_for('static', filename='images/cool-blue-logo-large.svg') }}" alt="Cool Blue" height="80" class="hero-logo">
+                    </div>
                     <h1 class="hero-title fade-in">
                         The Contact Management Platform Built for Growth
                     </h1>
@@ -315,7 +318,7 @@
                         <p class="quick-action-title">Manage Groups</p>
                     </a>
                     
-                    <a href="{{ url_for('templates_mgmt.templates') }}" class="quick-action-item">
+                    <a href="{{ url_for('templates.templates') }}" class="quick-action-item">
                         <div class="quick-action-icon">
                             <i data-feather="mail" width="20" height="20" style="color: white;"></i>
                         </div>

@@ -61,6 +61,16 @@
     --radius-xl: 1rem;
 }
 
+/* Hero Logo Styling */
+.hero-logo {
+    filter: drop-shadow(0 10px 20px rgba(37, 99, 235, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.hero-logo:hover {
+    transform: scale(1.05);
+}
+
 /* Base Styles */
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
