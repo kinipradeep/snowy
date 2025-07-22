@@ -251,7 +251,7 @@ class MessagingService:
     
     def _send_email_smtp(self, contact: Contact, template: Template,
                         personalized_content: Dict[str, str]) -> Dict[str, Any]:
-        """Send email using custom SMTP settings"""
+        """Send email using custom SMTP settings with enhanced authentication"""
         try:
             # Get SMTP configuration
             smtp_host = os.environ.get('SMTP_HOST')
@@ -259,36 +259,67 @@ class MessagingService:
             smtp_username = os.environ.get('SMTP_USERNAME')
             smtp_password = os.environ.get('SMTP_PASSWORD')
             smtp_use_tls = os.environ.get('SMTP_USE_TLS', 'true').lower() == 'true'
+            smtp_use_ssl = os.environ.get('SMTP_USE_SSL', 'false').lower() == 'true'
             from_email = os.environ.get('SMTP_FROM_EMAIL', smtp_username)
+            from_name = os.environ.get('SMTP_FROM_NAME', 'ContactHub')
             
-            # Create message
-            msg = MIMEMultipart()
-            msg['From'] = from_email
+            # Create message with proper encoding
+            msg = MIMEMultipart('alternative')
+            msg['From'] = f"{from_name} <{from_email}>" if from_name else from_email
             msg['To'] = contact.email
             msg['Subject'] = personalized_content['subject']
+            msg['Message-ID'] = f"<{hash(str(contact.email) + str(personalized_content['subject']))}@contacthub>"
             
-            # Add body
-            body = personalized_content['content']
+            # Add both plain text and HTML versions if HTML template
+            content = personalized_content['content']
+            
             if template.content_type == 'html':
-                msg.attach(MIMEText(body, 'html'))
+                # Create plain text version from HTML
+                import re
+                plain_text = re.sub('<[^<]+?>', '', content)
+                plain_text = re.sub(r'\n\s*\n', '\n\n', plain_text.strip())
+                
+                msg.attach(MIMEText(plain_text, 'plain', 'utf-8'))
+                msg.attach(MIMEText(content, 'html', 'utf-8'))
             else:
-                msg.attach(MIMEText(body, 'plain'))
+                msg.attach(MIMEText(content, 'plain', 'utf-8'))
             
-            # Connect and send
-            server = smtplib.SMTP(smtp_host, smtp_port)
-            server.starttls() if smtp_use_tls else None
-            server.login(smtp_username, smtp_password)
+            # Connect with proper SSL/TLS handling
+            if smtp_use_ssl:
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+            else:
+                server = smtplib.SMTP(smtp_host, smtp_port)
+                if smtp_use_tls:
+                    server.starttls()
             
+            # Authentication with error handling
+            if smtp_username and smtp_password:
+                server.login(smtp_username, smtp_password)
+            
+            # Send email
             text = msg.as_string()
             server.sendmail(from_email, contact.email, text)
             server.quit()
             
-            self.logger.info(f"Email sent via SMTP to {contact.email}")
+            self.logger.info(f"Email sent via SMTP ({smtp_host}:{smtp_port}) to {contact.email}")
             
             return {
                 'success': True,
-                'message': 'Email sent successfully via SMTP'
+                'message': f'Email sent successfully via SMTP ({smtp_host})',
+                'smtp_server': f'{smtp_host}:{smtp_port}'
             }
+            
+        except smtplib.SMTPAuthenticationError as e:
+            self.logger.error(f"SMTP Authentication error: {str(e)}")
+            return {'success': False, 'error': f'SMTP Authentication failed: Check username/password'}
+            
+        except smtplib.SMTPConnectError as e:
+            self.logger.error(f"SMTP Connection error: {str(e)}")
+            return {'success': False, 'error': f'SMTP Connection failed: Check host/port settings'}
+            
+        except smtplib.SMTPRecipientsRefused as e:
+            self.logger.error(f"SMTP Recipients refused: {str(e)}")
+            return {'success': False, 'error': f'Email address rejected by server'}
             
         except Exception as e:
             self.logger.error(f"SMTP error: {str(e)}")
@@ -296,20 +327,117 @@ class MessagingService:
     
     def _send_sms(self, contact: Contact, template: Template,
                  personalized_content: Dict[str, str]) -> Dict[str, Any]:
-        """Send SMS using Twilio"""
+        """Send SMS using configured gateway (Twilio or Custom)"""
         
         phone_number = contact.phone or contact.mobile
         if not phone_number:
             return {'success': False, 'error': 'Contact has no phone number'}
+        
+        # Try custom SMS gateway first
+        if self._is_custom_sms_configured():
+            return self._send_sms_custom_gateway(contact, template, personalized_content)
+        
+        # Fall back to Twilio
+        elif self._is_twilio_configured():
+            return self._send_sms_twilio(contact, template, personalized_content)
+        
+        else:
+            return {'success': False, 'error': 'No SMS service configured'}
+    
+    def _send_sms_custom_gateway(self, contact: Contact, template: Template,
+                                personalized_content: Dict[str, str]) -> Dict[str, Any]:
+        """Send SMS using custom HTTP gateway"""
+        import requests
+        
+        phone_number = contact.phone or contact.mobile
+        
+        try:
+            # Custom SMS Gateway Configuration
+            gateway_url = os.environ.get('SMS_GATEWAY_URL')
+            gateway_username = os.environ.get('SMS_GATEWAY_USERNAME')
+            gateway_password = os.environ.get('SMS_GATEWAY_PASSWORD')
+            gateway_sender_id = os.environ.get('SMS_GATEWAY_SENDER_ID', 'ContactHub')
+            gateway_api_key = os.environ.get('SMS_GATEWAY_API_KEY')
+            
+            # Prepare request based on gateway type
+            gateway_type = os.environ.get('SMS_GATEWAY_TYPE', 'generic').lower()
+            
+            if gateway_type == 'textlocal':
+                # TextLocal API format
+                payload = {
+                    'apikey': gateway_api_key,
+                    'numbers': phone_number,
+                    'message': personalized_content['content'],
+                    'sender': gateway_sender_id
+                }
+                response = requests.post(gateway_url, data=payload)
+                
+            elif gateway_type == 'msg91':
+                # MSG91 API format
+                headers = {'authkey': gateway_api_key, 'Content-Type': 'application/json'}
+                payload = {
+                    'sender': gateway_sender_id,
+                    'route': '4',
+                    'country': '91',
+                    'sms': [{
+                        'message': personalized_content['content'],
+                        'to': [phone_number]
+                    }]
+                }
+                response = requests.post(gateway_url, json=payload, headers=headers)
+                
+            elif gateway_type == 'clickatell':
+                # Clickatell API format
+                headers = {'Authorization': f'Bearer {gateway_api_key}', 'Content-Type': 'application/json'}
+                payload = {
+                    'messages': [{
+                        'to': [phone_number],
+                        'content': personalized_content['content']
+                    }]
+                }
+                response = requests.post(gateway_url, json=payload, headers=headers)
+                
+            else:
+                # Generic HTTP gateway
+                auth = (gateway_username, gateway_password) if gateway_username and gateway_password else None
+                headers = {'Authorization': f'Bearer {gateway_api_key}'} if gateway_api_key else {}
+                
+                payload = {
+                    'to': phone_number,
+                    'message': personalized_content['content'],
+                    'from': gateway_sender_id
+                }
+                
+                response = requests.post(gateway_url, data=payload, auth=auth, headers=headers)
+            
+            if response.status_code == 200:
+                self.logger.info(f"SMS sent via custom gateway to {phone_number}")
+                return {
+                    'success': True,
+                    'message': 'SMS sent successfully via custom gateway',
+                    'gateway_response': response.text[:200]
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'Gateway error: {response.status_code} - {response.text[:200]}'
+                }
+                
+        except Exception as e:
+            self.logger.error(f"Custom SMS gateway error: {str(e)}")
+            return {'success': False, 'error': f'Custom gateway error: {str(e)}'}
+    
+    def _send_sms_twilio(self, contact: Contact, template: Template,
+                        personalized_content: Dict[str, str]) -> Dict[str, Any]:
+        """Send SMS using Twilio"""
+        
+        phone_number = contact.phone or contact.mobile
         
         try:
             # Initialize Twilio client
             account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
             auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
             from_number = os.environ.get('TWILIO_PHONE_NUMBER')
-            
-            if not all([account_sid, auth_token, from_number]):
-                return {'success': False, 'error': 'Twilio credentials not configured'}
             
             client = TwilioClient(account_sid, auth_token)
             
@@ -320,11 +448,11 @@ class MessagingService:
                 to=phone_number
             )
             
-            self.logger.info(f"SMS sent to {phone_number}, SID: {message.sid}")
+            self.logger.info(f"SMS sent via Twilio to {phone_number}, SID: {message.sid}")
             
             return {
                 'success': True,
-                'message': 'SMS sent successfully',
+                'message': 'SMS sent successfully via Twilio',
                 'message_sid': message.sid
             }
             
@@ -395,6 +523,20 @@ class MessagingService:
             os.environ.get('SMTP_HOST'),
             os.environ.get('SMTP_USERNAME'),
             os.environ.get('SMTP_PASSWORD')
+        ])
+    
+    def _is_custom_sms_configured(self) -> bool:
+        """Check if custom SMS gateway is properly configured"""
+        return bool(os.environ.get('SMS_GATEWAY_URL') and 
+                   (os.environ.get('SMS_GATEWAY_API_KEY') or 
+                    (os.environ.get('SMS_GATEWAY_USERNAME') and os.environ.get('SMS_GATEWAY_PASSWORD'))))
+    
+    def _is_twilio_configured(self) -> bool:
+        """Check if Twilio is properly configured"""
+        return all([
+            os.environ.get('TWILIO_ACCOUNT_SID'),
+            os.environ.get('TWILIO_AUTH_TOKEN'),
+            os.environ.get('TWILIO_PHONE_NUMBER')
         ])
     
     def test_email_configuration(self, test_email: str) -> Dict[str, Any]:

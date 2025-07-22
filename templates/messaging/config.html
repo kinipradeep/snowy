@@ -85,15 +85,22 @@
                         {% endif %}
                     </div>
                     <div class="mb-3">
+                        {% if custom_sms_configured %}
+                        <div class="text-success small">
+                            <i data-feather="check" width="14" height="14" class="me-1"></i>
+                            Custom SMS Gateway Ready
+                        </div>
+                        {% endif %}
                         {% if twilio_configured %}
                         <div class="text-success small">
                             <i data-feather="check" width="14" height="14" class="me-1"></i>
                             Twilio SMS Ready
                         </div>
-                        {% else %}
+                        {% endif %}
+                        {% if not custom_sms_configured and not twilio_configured %}
                         <div class="text-muted small">
                             <i data-feather="x" width="14" height="14" class="me-1"></i>
-                            Twilio not configured
+                            No SMS service configured
                         </div>
                         {% endif %}
                     </div>
@@ -181,17 +188,28 @@
                         <i data-feather="message-circle" width="16" height="16" class="me-1"></i>
                         SMS Configuration
                     </h6>
-                    <p class="small text-muted mb-2">SMS delivery through Twilio:</p>
+                    <p class="small text-muted mb-2">Multiple SMS gateways supported:</p>
                     <div class="small">
-                        <strong>Required Environment Variables:</strong><br>
-                        • TWILIO_ACCOUNT_SID<br>
-                        • TWILIO_AUTH_TOKEN<br>
-                        • TWILIO_PHONE_NUMBER
+                        <div class="mb-2">
+                            <strong>Custom SMS Gateway:</strong><br>
+                            • Set SMS_GATEWAY_URL<br>
+                            • Set SMS_GATEWAY_TYPE (textlocal, msg91, clickatell, or generic)<br>
+                            • Set SMS_GATEWAY_API_KEY (for API-based auth)<br>
+                            OR<br>
+                            • Set SMS_GATEWAY_USERNAME & SMS_GATEWAY_PASSWORD<br>
+                            • Set SMS_GATEWAY_SENDER_ID (optional)
+                        </div>
+                        <div>
+                            <strong>Twilio SMS (Fallback):</strong><br>
+                            • TWILIO_ACCOUNT_SID<br>
+                            • TWILIO_AUTH_TOKEN<br>
+                            • TWILIO_PHONE_NUMBER
+                        </div>
                     </div>
                     <div class="mt-2 small">
                         <a href="https://console.twilio.com/" target="_blank" class="text-decoration-none">
                             <i data-feather="external-link" width="12" height="12" class="me-1"></i>
-                            Get Twilio Credentials
+                            Twilio Console
                         </a>
                     </div>
                 </div>

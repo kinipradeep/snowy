@@ -6,6 +6,7 @@ from utils import login_required, get_current_user, get_current_organization
 from messaging import MessagingService
 import logging
 import json
+import os
 
 templates_bp = Blueprint('templates', __name__)
 
@@ -349,11 +350,11 @@ def messaging_config():
     # Check service configurations
     aws_ses_configured = messaging_service._is_aws_ses_configured()
     smtp_configured = messaging_service._is_custom_smtp_configured()
-    twilio_configured = bool(os.environ.get('TWILIO_ACCOUNT_SID') and 
-                            os.environ.get('TWILIO_AUTH_TOKEN') and 
-                            os.environ.get('TWILIO_PHONE_NUMBER'))
+    custom_sms_configured = messaging_service._is_custom_sms_configured()
+    twilio_configured = messaging_service._is_twilio_configured()
     
     return render_template('messaging/config.html',
                          aws_ses_configured=aws_ses_configured,
                          smtp_configured=smtp_configured,
+                         custom_sms_configured=custom_sms_configured,
                          twilio_configured=twilio_configured)
