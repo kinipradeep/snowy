@@ -128,19 +128,59 @@ class Group(db.Model):
 class Contact(db.Model):
     """Contact model for storing contact information"""
     id = db.Column(db.Integer, primary_key=True)
+    
+    # Basic Information
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
+    middle_name = db.Column(db.String(50))
+    prefix = db.Column(db.String(10))  # Mr., Ms., Dr., etc.
+    suffix = db.Column(db.String(10))  # Jr., Sr., PhD, etc.
+    
+    # Contact Information
     email = db.Column(db.String(120))
+    email_secondary = db.Column(db.String(120))
     phone = db.Column(db.String(20))
     mobile = db.Column(db.String(20))
+    fax = db.Column(db.String(20))
+    website = db.Column(db.String(200))
+    
+    # Professional Information
     company = db.Column(db.String(100))
     job_title = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    industry = db.Column(db.String(100))
+    
+    # Address Information
     address = db.Column(db.Text)
+    address_line_2 = db.Column(db.String(100))
     city = db.Column(db.String(50))
     state = db.Column(db.String(50))
     postal_code = db.Column(db.String(20))
     country = db.Column(db.String(50))
+    
+    # Personal Information
+    birthday = db.Column(db.Date)
+    gender = db.Column(db.String(20))
+    marital_status = db.Column(db.String(20))
+    
+    # Social Media & Communication
+    linkedin = db.Column(db.String(200))
+    twitter = db.Column(db.String(200))
+    facebook = db.Column(db.String(200))
+    instagram = db.Column(db.String(200))
+    skype = db.Column(db.String(100))
+    whatsapp = db.Column(db.String(20))
+    telegram = db.Column(db.String(100))
+    
+    # Additional Information
+    lead_source = db.Column(db.String(100))  # How did you find this contact
+    lead_status = db.Column(db.String(50))   # Lead, Prospect, Customer, etc.
+    priority = db.Column(db.String(20), default='normal')  # high, normal, low
+    tags = db.Column(db.Text)  # JSON array of tags
     notes = db.Column(db.Text)
+    
+    # Custom fields (JSON storage for flexibility)
+    custom_fields = db.Column(db.Text)  # JSON object for custom fields
     
     # Foreign keys
     organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
