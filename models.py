@@ -308,3 +308,56 @@ class PasswordResetToken(db.Model):
     
     def __repr__(self):
         return f'<PasswordResetToken {self.token}>'
+
+class ApiKey(db.Model):
+    """API Key model for external integrations"""
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    key_hash = db.Column(db.String(64), unique=True, nullable=False)  # SHA-256 hash of the key
+    permissions = db.Column(db.JSON, default=['read'])  # ['read', 'write', 'message', 'admin']
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime)
+    last_used_at = db.Column(db.DateTime)
+    usage_count = db.Column(db.Integer, default=0)
+    
+    # Relationships
+    organization = db.relationship('Organization', backref='api_keys')
+    created_by = db.relationship('User', backref='created_api_keys')
+    
+    def __repr__(self):
+        return f'<ApiKey {self.name}>'
+
+class MessageLog(db.Model):
+    """Message Log model for tracking sent messages"""
+    id = db.Column(db.Integer, primary_key=True)
+    contact_id = db.Column(db.Integer, db.ForeignKey('contact.id'), nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('template.id'))
+    organization_id = db.Column(db.Integer, db.ForeignKey('organization.id'), nullable=False)
+    api_key_id = db.Column(db.Integer, db.ForeignKey('api_key.id'))  # If sent via API
+    
+    message_type = db.Column(db.String(20), nullable=False)  # sms, email, whatsapp
+    recipient = db.Column(db.String(255), nullable=False)  # phone or email
+    subject = db.Column(db.String(255))  # for emails
+    content = db.Column(db.Text)
+    
+    status = db.Column(db.String(20), default='pending')  # pending, sent, failed, delivered
+    provider = db.Column(db.String(50))  # twilio, smtp, etc.
+    provider_message_id = db.Column(db.String(255))
+    error_message = db.Column(db.Text)
+    
+    sent_at = db.Column(db.DateTime)
+    delivered_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    sent_via_api = db.Column(db.Boolean, default=False)
+    
+    # Relationships
+    contact = db.relationship('Contact', backref='message_logs')
+    template = db.relationship('Template', backref='message_logs')
+    organization = db.relationship('Organization', backref='message_logs')
+    api_key = db.relationship('ApiKey', backref='message_logs')
+    
+    def __repr__(self):
+        return f'<MessageLog {self.message_type} to {self.recipient}>'

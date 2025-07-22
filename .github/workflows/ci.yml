@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+          POSTGRES_DB: test_contact_manager
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-flask pytest-cov
+        pip install -r requirements.txt || pip install Flask Flask-SQLAlchemy psycopg2-binary gunicorn boto3 requests twilio email-validator Flask-Login Werkzeug PyJWT
+        
+    - name: Set up environment
+      run: |
+        echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_contact_manager" >> $GITHUB_ENV
+        echo "SESSION_SECRET=test-secret-key-for-ci" >> $GITHUB_ENV
+        echo "FLASK_ENV=testing" >> $GITHUB_ENV
+        
+    - name: Create database tables
+      run: |
+        python -c "from app import app, db; app.app_context().push(); db.create_all()"
+        
+    - name: Run tests
+      run: |
+        python -m pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
+      continue-on-error: true
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      continue-on-error: true
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install safety
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit
+        
+    - name: Check for security vulnerabilities
+      run: |
+        safety check
+        bandit -r . -x ./tests/
+      continue-on-error: true

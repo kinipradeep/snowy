@@ -27,6 +27,16 @@ def index():
     total_templates = Template.query.filter_by(organization_id=organization.id).count()
     recent_contacts = Contact.query.filter_by(organization_id=organization.id).order_by(Contact.created_at.desc()).limit(5).all()
     
+    # Get time greeting
+    from datetime import datetime
+    current_hour = datetime.now().hour
+    if current_hour < 12:
+        time_greeting = "morning"
+    elif current_hour < 17:
+        time_greeting = "afternoon"  
+    else:
+        time_greeting = "evening"
+    
     return render_template('index.html', 
                          logged_in=True, 
                          user=user,
@@ -34,7 +44,8 @@ def index():
                          total_contacts=total_contacts,
                          total_groups=total_groups,
                          total_templates=total_templates,
-                         recent_contacts=recent_contacts)
+                         recent_contacts=recent_contacts,
+                         time_greeting=time_greeting)
 
 @app.route('/dashboard')
 @login_required
