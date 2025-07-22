@@ -40,11 +40,11 @@
                                 <option value="">Choose a template...</option>
                                 {% for template in templates %}
                                 <option value="{{ template.id }}" 
-                                        data-channel="{{ template.channel }}"
+                                        data-channel="{{ template.template_type }}"
                                         data-subject="{{ template.subject or '' }}"
                                         data-content="{{ template.content or '' }}"
                                         {% if template.id == selected_template_id %}selected{% endif %}>
-                                    {{ template.name }} ({{ template.channel.upper() }})
+                                    {{ template.name }} ({{ template.template_type.upper() }})
                                 </option>
                                 {% endfor %}
                             </select>

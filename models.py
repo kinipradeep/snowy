@@ -289,6 +289,11 @@ class Template(db.Model):
     # Relationships
     created_by = db.relationship('User', backref='created_templates')
     
+    @property
+    def type(self):
+        """Alias for template_type to maintain compatibility"""
+        return self.template_type
+    
     def __repr__(self):
         return f'<Template {self.name}>'
 

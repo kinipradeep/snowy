@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}" class="text-primary">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Organization Settings</li>
+                </nav>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">Organization Settings</h1>
+            <p class="text-muted">Configure messaging services and organization preferences</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Navigation Tabs -->
+        <div class="col-12 mb-4">
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="messaging-tab" data-bs-toggle="tab" data-bs-target="#messaging" type="button" role="tab">
+                        <i data-feather="message-circle" width="16" height="16" class="me-2"></i>
+                        Messaging Services
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="organization-tab" data-bs-toggle="tab" data-bs-target="#organization" type="button" role="tab">
+                        <i data-feather="settings" width="16" height="16" class="me-2"></i>
+                        Organization
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="team-tab" data-bs-toggle="tab" data-bs-target="#team" type="button" role="tab">
+                        <i data-feather="users" width="16" height="16" class="me-2"></i>
+                        Team Management
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-12">
+            <div class="tab-content" id="settingsTabsContent">
+                <!-- Messaging Services Tab -->
+                <div class="tab-pane fade show active" id="messaging" role="tabpanel">
+                    <div class="row">
+                        <!-- SMS Configuration -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0 text-light">
+                                        <i data-feather="smartphone" width="20" height="20" class="me-2"></i>
+                                        SMS Configuration
+                                    </h5>
+                                    <span class="badge bg-{% if sms_configured %}success{% else %}secondary{% endif %}">
+                                        {% if sms_configured %}Configured{% else %}Not Set{% endif %}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('organizations.save_sms_config', org_id=organization.id) }}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Provider</label>
+                                            <select class="form-select bg-secondary text-light border-secondary" name="sms_provider">
+                                                <option value="twilio" {% if sms_config and sms_config.get('provider') == 'twilio' %}selected{% endif %}>Twilio</option>
+                                                <option value="textlocal" {% if sms_config and sms_config.get('provider') == 'textlocal' %}selected{% endif %}>TextLocal</option>
+                                                <option value="msg91" {% if sms_config and sms_config.get('provider') == 'msg91' %}selected{% endif %}>MSG91</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">API Key/Account SID</label>
+                                            <input type="password" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="sms_api_key" placeholder="Your SMS API Key"
+                                                   value="{{ sms_config.get('api_key', '') if sms_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Auth Token/API Secret</label>
+                                            <input type="password" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="sms_auth_token" placeholder="Your SMS Auth Token"
+                                                   value="{{ sms_config.get('auth_token', '') if sms_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">From Number/Sender ID</label>
+                                            <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="sms_from_number" placeholder="+1234567890 or YourBrand"
+                                                   value="{{ sms_config.get('from_number', '') if sms_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i data-feather="save" width="16" height="16" class="me-2"></i>
+                                                Save SMS Config
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" onclick="testSmsConfig()">
+                                                <i data-feather="send" width="16" height="16" class="me-2"></i>
+                                                Test SMS
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Configuration -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0 text-light">
+                                        <i data-feather="mail" width="20" height="20" class="me-2"></i>
+                                        Email Configuration
+                                    </h5>
+                                    <span class="badge bg-{% if email_configured %}success{% else %}secondary{% endif %}">
+                                        {% if email_configured %}Configured{% else %}Not Set{% endif %}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('organizations.save_email_config', org_id=organization.id) }}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">SMTP Host</label>
+                                            <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="smtp_host" placeholder="smtp.gmail.com"
+                                                   value="{{ email_config.get('smtp_host', '') if email_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label text-light">Port</label>
+                                                <input type="number" class="form-control bg-secondary text-light border-secondary" 
+                                                       name="smtp_port" placeholder="587"
+                                                       value="{{ email_config.get('smtp_port', '') if email_config else '' }}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label text-light">Security</label>
+                                                <select class="form-select bg-secondary text-light border-secondary" name="smtp_security">
+                                                    <option value="tls" {% if email_config and email_config.get('security') == 'tls' %}selected{% endif %}>TLS</option>
+                                                    <option value="ssl" {% if email_config and email_config.get('security') == 'ssl' %}selected{% endif %}>SSL</option>
+                                                    <option value="none" {% if email_config and email_config.get('security') == 'none' %}selected{% endif %}>None</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Username/Email</label>
+                                            <input type="email" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="smtp_username" placeholder="your-email@domain.com"
+                                                   value="{{ email_config.get('username', '') if email_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Password/App Password</label>
+                                            <input type="password" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="smtp_password" placeholder="Your email password">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">From Name</label>
+                                            <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="smtp_from_name" placeholder="Your Organization Name"
+                                                   value="{{ email_config.get('from_name', '') if email_config else '' }}">
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i data-feather="save" width="16" height="16" class="me-2"></i>
+                                                Save Email Config
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" onclick="testEmailConfig()">
+                                                <i data-feather="send" width="16" height="16" class="me-2"></i>
+                                                Test Email
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp Configuration -->
+                        <div class="col-lg-12 mb-4">
+                            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0 text-light">
+                                        <i data-feather="message-square" width="20" height="20" class="me-2"></i>
+                                        WhatsApp Business API
+                                    </h5>
+                                    <span class="badge bg-{% if whatsapp_configured %}success{% else %}secondary{% endif %}">
+                                        {% if whatsapp_configured %}Configured{% else %}Not Set{% endif %}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <i data-feather="info" width="16" height="16" class="me-2"></i>
+                                        WhatsApp Business API requires approval from Meta. Contact support for setup assistance.
+                                    </div>
+                                    <form method="POST" action="{{ url_for('organizations.save_whatsapp_config', org_id=organization.id) }}">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label text-light">Business Account ID</label>
+                                                <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                       name="whatsapp_account_id" placeholder="Your Business Account ID"
+                                                       value="{{ whatsapp_config.get('account_id', '') if whatsapp_config else '' }}">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label class="form-label text-light">Phone Number ID</label>
+                                                <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                       name="whatsapp_phone_id" placeholder="Your Phone Number ID"
+                                                       value="{{ whatsapp_config.get('phone_id', '') if whatsapp_config else '' }}">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Access Token</label>
+                                            <input type="password" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="whatsapp_access_token" placeholder="Your WhatsApp Access Token">
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i data-feather="save" width="16" height="16" class="me-2"></i>
+                                                Save WhatsApp Config
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" onclick="testWhatsAppConfig()">
+                                                <i data-feather="send" width="16" height="16" class="me-2"></i>
+                                                Test WhatsApp
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Organization Tab -->
+                <div class="tab-pane fade" id="organization" role="tabpanel">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="card-header" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0 text-light">
+                                        <i data-feather="building" width="20" height="20" class="me-2"></i>
+                                        Organization Details
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST" action="{{ url_for('organizations.update_organization', org_id=organization.id) }}">
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Organization Name</label>
+                                            <input type="text" class="form-control bg-secondary text-light border-secondary" 
+                                                   name="name" value="{{ organization.name }}" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label text-light">Description</label>
+                                            <textarea class="form-control bg-secondary text-light border-secondary" 
+                                                      name="description" rows="3">{{ organization.description or '' }}</textarea>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary">
+                                            <i data-feather="save" width="16" height="16" class="me-2"></i>
+                                            Update Organization
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Management Tab -->
+                <div class="tab-pane fade" id="team" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card" style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                                <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                                    <h5 class="mb-0 text-light">
+                                        <i data-feather="users" width="20" height="20" class="me-2"></i>
+                                        Team Members
+                                    </h5>
+                                    <a href="{{ url_for('organizations.invite_user', org_id=organization.id) }}" class="btn btn-primary">
+                                        <i data-feather="user-plus" width="16" height="16" class="me-2"></i>
+                                        Invite Member
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-dark table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Member</th>
+                                                    <th>Role</th>
+                                                    <th>Joined</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for member in organization.members %}
+                                                <tr>
+                                                    <td>
+                                                        <div class="d-flex align-items-center">
+                                                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                                <span class="text-white small fw-bold">{{ member.user.first_name[0] }}{{ member.user.last_name[0] }}</span>
+                                                            </div>
+                                                            <div>
+                                                                <div class="text-light">{{ member.user.full_name }}</div>
+                                                                <small class="text-muted">{{ member.user.email }}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-{% if member.role == 'owner' %}primary{% elif member.role == 'admin' %}info{% else %}secondary{% endif %}">
+                                                            {{ member.role.title() }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-muted">{{ member.created_at.strftime('%B %d, %Y') }}</td>
+                                                    <td>
+                                                        {% if member.role != 'owner' %}
+                                                        <div class="btn-group" role="group">
+                                                            <button class="btn btn-sm btn-outline-secondary" onclick="changeRole({{ member.id }})">
+                                                                <i data-feather="edit" width="14" height="14"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-outline-danger" onclick="removeMember({{ member.id }})">
+                                                                <i data-feather="trash-2" width="14" height="14"></i>
+                                                            </button>
+                                                        </div>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function testSmsConfig() {
+    const phone = prompt('Enter a test phone number (with country code):');
+    if (!phone) return;
+    
+    fetch('{{ url_for("organizations.test_sms", org_id=organization.id) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({test_phone: phone})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('SMS test successful! Check your phone.');
+        } else {
+            alert('SMS test failed: ' + data.error);
+        }
+    });
+}
+
+function testEmailConfig() {
+    const email = prompt('Enter a test email address:');
+    if (!email) return;
+    
+    fetch('{{ url_for("organizations.test_email", org_id=organization.id) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({test_email: email})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email test successful! Check your inbox.');
+        } else {
+            alert('Email test failed: ' + data.error);
+        }
+    });
+}
+
+function testWhatsAppConfig() {
+    const phone = prompt('Enter a test WhatsApp number (with country code):');
+    if (!phone) return;
+    
+    fetch('{{ url_for("organizations.test_whatsapp", org_id=organization.id) }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({test_phone: phone})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('WhatsApp test successful!');
+        } else {
+            alert('WhatsApp test failed: ' + data.error);
+        }
+    });
+}
+</script>
+
+{% endblock %}
