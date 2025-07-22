@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if logged_in %}Dashboard - Contact Manager{% else %}Welcome - Contact Manager{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if not logged_in %}
+<!-- Landing Page for Non-Authenticated Users -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-4">
+                <i data-feather="users" class="me-3"></i>Contact Manager
+            </h1>
+            <p class="lead mb-4">
+                Organize your contacts, create message templates, and manage your communication all in one place.
+            </p>
+            <div class="d-grid gap-2 d-md-block">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">
+                    <i data-feather="user-plus" class="me-2"></i>Get Started
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg">
+                    <i data-feather="log-in" class="me-2"></i>Sign In
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="users" class="mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">Contact Management</h5>
+                        <p class="card-text">Store and organize all your contacts with detailed information including phone, email, and address.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="folder" class="mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">Group Organization</h5>
+                        <p class="card-text">Create groups to categorize your contacts for better organization and targeted messaging.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="file-text" class="mb-3" style="width: 48px; height: 48px;"></i>
+                        <h5 class="card-title">Message Templates</h5>
+                        <p class="card-text">Create reusable templates for email, SMS, WhatsApp, and RCS messages to save time.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Dashboard for Authenticated Users -->
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3 mb-0">Welcome back, {{ user.first_name }}!</h1>
+        <p class="text-muted">Here's an overview of your contact management system.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">{{ total_contacts }}</h5>
+                        <p class="card-text">Total Contacts</p>
+                    </div>
+                    <i data-feather="users" style="width: 32px; height: 32px;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-primary border-0">
+                <a href="{{ url_for('contacts.contacts') }}" class="text-white text-decoration-none">
+                    View all contacts <i data-feather="arrow-right" class="ms-1" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">{{ total_groups }}</h5>
+                        <p class="card-text">Groups</p>
+                    </div>
+                    <i data-feather="folder" style="width: 32px; height: 32px;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-success border-0">
+                <a href="{{ url_for('groups.groups') }}" class="text-white text-decoration-none">
+                    Manage groups <i data-feather="arrow-right" class="ms-1" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">{{ total_templates }}</h5>
+                        <p class="card-text">Templates</p>
+                    </div>
+                    <i data-feather="file-text" style="width: 32px; height: 32px;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-info border-0">
+                <a href="{{ url_for('templates.templates') }}" class="text-white text-decoration-none">
+                    View templates <i data-feather="arrow-right" class="ms-1" style="width: 16px; height: 16px;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title mb-0">Coming Soon</h5>
+                        <p class="card-text">Messaging</p>
+                    </div>
+                    <i data-feather="send" style="width: 32px; height: 32px;"></i>
+                </div>
+            </div>
+            <div class="card-footer bg-warning border-0">
+                <span class="text-muted">Email, SMS, WhatsApp</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Contacts</h5>
+                <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-sm btn-primary">
+                    <i data-feather="plus" class="me-1" style="width: 16px; height: 16px;"></i>Add Contact
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_contacts %}
+                <div class="list-group list-group-flush">
+                    {% for contact in recent_contacts %}
+                    <div class="list-group-item border-0 px-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ contact.full_name }}</h6>
+                                <p class="text-muted mb-0">
+                                    {% if contact.email %}{{ contact.email }}{% endif %}
+                                    {% if contact.email and contact.phone %} • {% endif %}
+                                    {% if contact.phone %}{{ contact.phone }}{% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('contacts.contact_detail', contact_id=contact.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i data-feather="users" class="mb-3" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                    <p class="text-muted">No contacts yet. <a href="{{ url_for('contacts.new_contact') }}">Add your first contact</a> to get started.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-outline-primary">
+                        <i data-feather="user-plus" class="me-2"></i>Add Contact
+                    </a>
+                    <a href="{{ url_for('groups.new_group') }}" class="btn btn-outline-success">
+                        <i data-feather="folder-plus" class="me-2"></i>Create Group
+                    </a>
+                    <a href="{{ url_for('templates.new_template') }}" class="btn btn-outline-info">
+                        <i data-feather="file-plus" class="me-2"></i>New Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

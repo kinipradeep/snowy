@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Contact Manager{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
     
-    <!-- Custom CSS -->
-    <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
+    <!-- Professional CSS -->
+    <link href="{{ url_for('static', filename='css/professional.css') }}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i data-feather="users" class="me-2"></i>Contact Manager
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i data-feather="zap" width="24" height="24" class="me-2"></i>ContactHub
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -30,52 +30,63 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">
-                            <i data-feather="home" class="me-1"></i>Dashboard
+                            <i data-feather="home" width="16" height="16" class="me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('contacts.contacts') }}">
-                            <i data-feather="users" class="me-1"></i>Contacts
+                            <i data-feather="users" width="16" height="16" class="me-1"></i>Contacts
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('groups.groups') }}">
-                            <i data-feather="folder" class="me-1"></i>Groups
+                            <i data-feather="folder" width="16" height="16" class="me-1"></i>Groups
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('templates.templates') }}">
-                            <i data-feather="file-text" class="me-1"></i>Templates
+                            <i data-feather="file-text" width="16" height="16" class="me-1"></i>Templates
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('organizations.organizations') }}">
+                            <i data-feather="briefcase" width="16" height="16" class="me-1"></i>Organizations
                         </a>
                     </li>
                 </ul>
                 
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i data-feather="user" class="me-1"></i>{{ session.username }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <div class="contact-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                {{ session.username[0].upper() }}
+                            </div>
+                            {{ session.username }}
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#">
-                                <i data-feather="settings" class="me-2"></i>Settings
+                                <i data-feather="user" width="16" height="16" class="me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i data-feather="settings" width="16" height="16" class="me-2"></i>Settings
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i data-feather="log-out" class="me-2"></i>Logout
+                                <i data-feather="log-out" width="16" height="16" class="me-2"></i>Logout
                             </a></li>
                         </ul>
                     </li>
                 </ul>
                 {% else %}
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
+                    <li class="nav-item me-2">
                         <a class="nav-link" href="{{ url_for('auth.login') }}">
-                            <i data-feather="log-in" class="me-1"></i>Login
+                            <i data-feather="log-in" width="16" height="16" class="me-1"></i>Sign In
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('auth.register') }}">
-                            <i data-feather="user-plus" class="me-1"></i>Register
+                        <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">
+                            <i data-feather="user-plus" width="16" height="16" class="me-1"></i>Get Started
                         </a>
                     </li>
                 </ul>
@@ -84,7 +95,7 @@
         </div>
     </nav>
 
-    <main class="py-4">
+    <main class="py-4" style="margin-top: 80px;">
         <div class="container">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -101,9 +112,13 @@
         </div>
     </main>
 
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="py-5 mt-5" style="background: var(--gray-50); border-top: 1px solid var(--gray-200);">
         <div class="container text-center">
-            <p class="mb-0">&copy; 2025 Contact Manager. Built with Flask and Bootstrap.</p>
+            <div class="mb-3">
+                <i data-feather="zap" width="20" height="20" class="text-primary me-2"></i>
+                <span class="fw-bold text-primary">ContactHub</span>
+            </div>
+            <p class="text-muted small mb-0">&copy; 2025 ContactHub. Professional contact management made simple.</p>
         </div>
     </footer>
 
