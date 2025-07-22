@@ -271,7 +271,7 @@
                                             {{ member.role.title() }}
                                         </span>
                                     </td>
-                                    <td class="text-muted">{{ member.created_at.strftime('%B %d, %Y') }}</td>
+                                    <td class="text-muted">{{ member.joined_at.strftime('%B %d, %Y') if member.joined_at else 'N/A' }}</td>
                                     <td>
                                         {% if member.role != 'owner' %}
                                         <div class="btn-group" role="group">
