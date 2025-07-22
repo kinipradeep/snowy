@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}{{ template.name }} - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="mb-1">
+                        {% if template.template_type == 'email' %}
+                            <i data-feather="mail" class="me-2"></i>
+                        {% elif template.template_type == 'sms' %}
+                            <i data-feather="message-square" class="me-2"></i>
+                        {% elif template.template_type == 'whatsapp' %}
+                            <i data-feather="message-circle" class="me-2"></i>
+                        {% else %}
+                            <i data-feather="smartphone" class="me-2"></i>
+                        {% endif %}
+                        {{ template.name }}
+                    </h4>
+                    <span class="badge bg-{% if template.template_type == 'email' %}primary{% elif template.template_type == 'sms' %}success{% elif template.template_type == 'whatsapp' %}info{% else %}warning{% endif %}">
+                        {{ template.template_type.upper() }}
+                    </span>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ url_for('templates.edit_template', template_id=template.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>Edit
+                    </a>
+                    <form method="POST" action="{{ url_for('templates.duplicate_template', template_id=template.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i data-feather="copy" class="me-2"></i>Duplicate
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="deleteTemplate({{ template.id }}, '{{ template.name }}')">
+                        <i data-feather="trash-2" class="me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Email Subject (if applicable) -->
+                {% if template.subject %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">Email Subject</h6>
+                    <div class="p-3 bg-light border rounded">
+                        <strong>{{ template.subject }}</strong>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Template Content -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">Template Content</h6>
+                    <div class="p-3 bg-light border rounded">
+                        <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ template.content }}</pre>
+                    </div>
+                </div>
+
+                <!-- Template Variables -->
+                {% if variables %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">Available Variables</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for variable in variables %}
+                        <span class="badge bg-secondary">{{{ variable }}}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Preview Section -->
+                <div class="mb-4">
+                    <h6 class="text-muted mb-2">Preview with Sample Data</h6>
+                    <div class="card">
+                        <div class="card-header">
+                            <small class="text-muted">This is how your template might look with actual contact data:</small>
+                        </div>
+                        <div class="card-body">
+                            {% if template.subject %}
+                            <div class="mb-3">
+                                <strong>Subject:</strong> {{ template.subject.replace('{first_name}', 'John').replace('{last_name}', 'Doe').replace('{company}', 'Acme Corp') }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <pre style="white-space: pre-wrap; font-family: inherit;">{{ template.content.replace('{first_name}', 'John').replace('{last_name}', 'Doe').replace('{email}', 'john.doe@example.com').replace('{company}', 'Acme Corp').replace('{phone}', '(555) 123-4567').replace('{job_title}', 'Software Engineer') }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Template Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('templates.edit_template', template_id=template.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>Edit Template
+                    </a>
+                    <form method="POST" action="{{ url_for('templates.duplicate_template', template_id=template.id) }}">
+                        <button type="submit" class="btn btn-outline-secondary w-100">
+                            <i data-feather="copy" class="me-2"></i>Duplicate Template
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-info" onclick="copyToClipboard()">
+                        <i data-feather="clipboard" class="me-2"></i>Copy Content
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Template Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <small class="text-muted">Type:</small><br>
+                        <strong>{{ template.template_type.title() }}</strong>
+                    </div>
+                    {% if variables %}
+                    <div class="col-12">
+                        <small class="text-muted">Variables:</small><br>
+                        <strong>{{ variables|length }} variable{% if variables|length != 1 %}s{% endif %}</strong>
+                    </div>
+                    {% endif %}
+                    <div class="col-12">
+                        <small class="text-muted">Created:</small><br>
+                        <small>{{ template.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted">Last Updated:</small><br>
+                        <small>{{ template.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Tips -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Usage Tips</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">• Use variables like {first_name} to personalize messages</li>
+                        <li class="mb-2">• Keep {{ template.template_type }} messages concise and clear</li>
+                        {% if template.template_type == 'sms' %}
+                        <li class="mb-2">• SMS messages should be under 160 characters when possible</li>
+                        {% endif %}
+                        <li class="mb-0">• Test your template before sending to contacts</li>
+                    </ul>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the template <strong id="templateName"></strong>?</p>
+                <p class="text-muted mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteTemplate(templateId, templateName) {
+    document.getElementById('templateName').textContent = templateName;
+    document.getElementById('deleteForm').action = "{{ url_for('templates.delete_template', template_id=template.id) }}";
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+
+function copyToClipboard() {
+    const content = `{% if template.subject %}Subject: {{ template.subject }}
+
+{% endif %}{{ template.content }}`;
+    
+    navigator.clipboard.writeText(content).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i data-feather="check" class="me-2"></i>Copied!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-outline-info');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-info');
+            feather.replace();
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Failed to copy: ', err);
+        alert('Failed to copy content to clipboard');
+    });
+}
+</script>
+{% endblock %}

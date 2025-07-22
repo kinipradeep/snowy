@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.name }} - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i data-feather="folder" class="me-2"></i>{{ group.name }}
+                </h4>
+                <div class="btn-group">
+                    <a href="{{ url_for('groups.edit_group', group_id=group.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>Edit
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="deleteGroup({{ group.id }}, '{{ group.name }}')">
+                        <i data-feather="trash-2" class="me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if group.description %}
+                <p class="text-muted mb-4">{{ group.description }}</p>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Contacts in this group ({{ contacts|length }})</h6>
+                    <a href="{{ url_for('contacts.new_contact') }}?group={{ group.id }}" class="btn btn-sm btn-primary">
+                        <i data-feather="plus" class="me-1"></i>Add Contact
+                    </a>
+                </div>
+                
+                {% if contacts %}
+                <div class="list-group">
+                    {% for contact in contacts %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ contact.full_name }}</h6>
+                                <p class="text-muted mb-0">
+                                    {% if contact.email %}
+                                    <i data-feather="mail" style="width: 14px; height: 14px;" class="me-1"></i>
+                                    {{ contact.email }}
+                                    {% endif %}
+                                    {% if contact.email and contact.phone %} • {% endif %}
+                                    {% if contact.phone %}
+                                    <i data-feather="phone" style="width: 14px; height: 14px;" class="me-1"></i>
+                                    {{ contact.phone }}
+                                    {% endif %}
+                                </p>
+                                {% if contact.company %}
+                                <small class="text-muted">{{ contact.company }}</small>
+                                {% endif %}
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('contacts.contact_detail', contact_id=contact.id) }}" 
+                                   class="btn btn-outline-secondary" title="View">
+                                    <i data-feather="eye" style="width: 16px; height: 16px;"></i>
+                                </a>
+                                <a href="{{ url_for('contacts.edit_contact', contact_id=contact.id) }}" 
+                                   class="btn btn-outline-secondary" title="Edit">
+                                    <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i data-feather="users" style="width: 48px; height: 48px; opacity: 0.5;" class="mb-3"></i>
+                    <p class="text-muted">No contacts in this group yet.</p>
+                    <a href="{{ url_for('contacts.new_contact') }}?group={{ group.id }}" class="btn btn-primary">
+                        <i data-feather="plus" class="me-2"></i>Add First Contact
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Group Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('contacts.new_contact') }}?group={{ group.id }}" class="btn btn-outline-primary">
+                        <i data-feather="user-plus" class="me-2"></i>Add Contact
+                    </a>
+                    <a href="{{ url_for('contacts.contacts') }}?group={{ group.id }}" class="btn btn-outline-secondary">
+                        <i data-feather="users" class="me-2"></i>View All Contacts
+                    </a>
+                    <a href="{{ url_for('groups.edit_group', group_id=group.id) }}" class="btn btn-outline-secondary">
+                        <i data-feather="edit" class="me-2"></i>Edit Group
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Group Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Group Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <small class="text-muted">Total Contacts:</small><br>
+                        <strong>{{ contacts|length }}</strong>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted">Created:</small><br>
+                        <small>{{ group.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted">Last Updated:</small><br>
+                        <small>{{ group.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the group <strong id="groupName"></strong>?</p>
+                {% if contacts %}
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> This group contains {{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}. 
+                    You must move or delete all contacts before deleting this group.
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">This action cannot be undone.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                {% if not contacts %}
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteGroup(groupId, groupName) {
+    document.getElementById('groupName').textContent = groupName;
+    document.getElementById('deleteForm').action = "{{ url_for('groups.delete_group', group_id=group.id) }}";
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

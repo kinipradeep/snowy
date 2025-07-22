@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if contact %}Edit {{ contact.full_name }} - Contact Manager{% else %}Add Contact - Contact Manager{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="{% if contact %}edit{% else %}user-plus{% endif %}" class="me-2"></i>
+                    {% if contact %}Edit Contact{% else %}Add New Contact{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Personal Information -->
+                    <h6 class="text-muted mb-3">Personal Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control {% if errors.first_name %}is-invalid{% endif %}" 
+                                       id="first_name" name="first_name" 
+                                       value="{{ (form_data and form_data.first_name) or (contact and contact.first_name) or '' }}" required>
+                                {% if errors.first_name %}
+                                <div class="invalid-feedback">{{ errors.first_name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control {% if errors.last_name %}is-invalid{% endif %}" 
+                                       id="last_name" name="last_name" 
+                                       value="{{ (form_data and form_data.last_name) or (contact and contact.last_name) or '' }}" required>
+                                {% if errors.last_name %}
+                                <div class="invalid-feedback">{{ errors.last_name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <h6 class="text-muted mb-3 mt-4">Contact Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control {% if errors.email %}is-invalid{% endif %}" 
+                                       id="email" name="email" 
+                                       value="{{ (form_data and form_data.email) or (contact and contact.email) or '' }}">
+                                {% if errors.email %}
+                                <div class="invalid-feedback">{{ errors.email }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control {% if errors.phone %}is-invalid{% endif %}" 
+                                       id="phone" name="phone" 
+                                       value="{{ (form_data and form_data.phone) or (contact and contact.phone) or '' }}">
+                                {% if errors.phone %}
+                                <div class="invalid-feedback">{{ errors.phone }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="mobile" class="form-label">Mobile Number</label>
+                                <input type="tel" class="form-control {% if errors.mobile %}is-invalid{% endif %}" 
+                                       id="mobile" name="mobile" 
+                                       value="{{ (form_data and form_data.mobile) or (contact and contact.mobile) or '' }}">
+                                {% if errors.mobile %}
+                                <div class="invalid-feedback">{{ errors.mobile }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="group_id" class="form-label">Group</label>
+                                <select class="form-select" id="group_id" name="group_id">
+                                    <option value="">No Group</option>
+                                    {% for group in groups %}
+                                    <option value="{{ group.id }}" 
+                                            {% if (form_data and form_data.group_id|int == group.id) or (contact and contact.group_id == group.id) %}selected{% endif %}>
+                                        {{ group.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if errors.contact_method %}
+                    <div class="alert alert-danger">{{ errors.contact_method }}</div>
+                    {% endif %}
+
+                    <!-- Professional Information -->
+                    <h6 class="text-muted mb-3 mt-4">Professional Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="company" class="form-label">Company</label>
+                                <input type="text" class="form-control {% if errors.company %}is-invalid{% endif %}" 
+                                       id="company" name="company" 
+                                       value="{{ (form_data and form_data.company) or (contact and contact.company) or '' }}">
+                                {% if errors.company %}
+                                <div class="invalid-feedback">{{ errors.company }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="job_title" class="form-label">Job Title</label>
+                                <input type="text" class="form-control {% if errors.job_title %}is-invalid{% endif %}" 
+                                       id="job_title" name="job_title" 
+                                       value="{{ (form_data and form_data.job_title) or (contact and contact.job_title) or '' }}">
+                                {% if errors.job_title %}
+                                <div class="invalid-feedback">{{ errors.job_title }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Information -->
+                    <h6 class="text-muted mb-3 mt-4">Address Information</h6>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Street Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="2">{{ (form_data and form_data.address) or (contact and contact.address) or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control {% if errors.city %}is-invalid{% endif %}" 
+                                       id="city" name="city" 
+                                       value="{{ (form_data and form_data.city) or (contact and contact.city) or '' }}">
+                                {% if errors.city %}
+                                <div class="invalid-feedback">{{ errors.city }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="state" class="form-label">State/Province</label>
+                                <input type="text" class="form-control {% if errors.state %}is-invalid{% endif %}" 
+                                       id="state" name="state" 
+                                       value="{{ (form_data and form_data.state) or (contact and contact.state) or '' }}">
+                                {% if errors.state %}
+                                <div class="invalid-feedback">{{ errors.state }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="postal_code" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control {% if errors.postal_code %}is-invalid{% endif %}" 
+                                       id="postal_code" name="postal_code" 
+                                       value="{{ (form_data and form_data.postal_code) or (contact and contact.postal_code) or '' }}">
+                                {% if errors.postal_code %}
+                                <div class="invalid-feedback">{{ errors.postal_code }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Country</label>
+                        <input type="text" class="form-control {% if errors.country %}is-invalid{% endif %}" 
+                               id="country" name="country" 
+                               value="{{ (form_data and form_data.country) or (contact and contact.country) or '' }}">
+                        {% if errors.country %}
+                        <div class="invalid-feedback">{{ errors.country }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Notes -->
+                    <h6 class="text-muted mb-3 mt-4">Additional Information</h6>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="Any additional notes about this contact...">{{ (form_data and form_data.notes) or (contact and contact.notes) or '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('contacts.contacts') }}" class="btn btn-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save" class="me-2"></i>
+                            {% if contact %}Update Contact{% else %}Save Contact{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

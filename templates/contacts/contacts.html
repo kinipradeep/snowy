@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Contacts - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i data-feather="users" class="me-2"></i>Contacts
+    </h1>
+    <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-primary">
+        <i data-feather="plus" class="me-2"></i>Add Contact
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search Contacts</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Search by name, email, or company...">
+            </div>
+            <div class="col-md-4">
+                <label for="group" class="form-label">Filter by Group</label>
+                <select class="form-select" id="group" name="group">
+                    <option value="">All Groups</option>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}" {% if selected_group == group.id %}selected{% endif %}>
+                        {{ group.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-secondary me-2">
+                    <i data-feather="search"></i>
+                </button>
+                <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-secondary">
+                    <i data-feather="x"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contacts List -->
+{% if contacts.items %}
+<div class="card">
+    <div class="card-header">
+        <h6 class="mb-0">{{ contacts.total }} contact{% if contacts.total != 1 %}s{% endif %} found</h6>
+    </div>
+    <div class="list-group list-group-flush">
+        {% for contact in contacts.items %}
+        <div class="list-group-item">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <h6 class="mb-1">{{ contact.full_name }}</h6>
+                    {% if contact.company %}
+                    <p class="text-muted mb-0">{{ contact.company }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    {% if contact.email %}
+                    <p class="mb-0">
+                        <i data-feather="mail" style="width: 16px; height: 16px;" class="me-1"></i>
+                        {{ contact.email }}
+                    </p>
+                    {% endif %}
+                    {% if contact.phone %}
+                    <p class="mb-0">
+                        <i data-feather="phone" style="width: 16px; height: 16px;" class="me-1"></i>
+                        {{ contact.phone }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    {% if contact.group %}
+                    <span class="badge bg-secondary">{{ contact.group.name }}</span>
+                    {% endif %}
+                </div>
+                <div class="col-md-2 text-end">
+                    <div class="btn-group btn-group-sm">
+                        <a href="{{ url_for('contacts.contact_detail', contact_id=contact.id) }}" 
+                           class="btn btn-outline-secondary" title="View">
+                            <i data-feather="eye" style="width: 16px; height: 16px;"></i>
+                        </a>
+                        <a href="{{ url_for('contacts.edit_contact', contact_id=contact.id) }}" 
+                           class="btn btn-outline-secondary" title="Edit">
+                            <i data-feather="edit" style="width: 16px; height: 16px;"></i>
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" title="Delete"
+                                onclick="deleteContact({{ contact.id }}, '{{ contact.full_name }}')">
+                            <i data-feather="trash-2" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if contacts.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if contacts.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('contacts.contacts', page=contacts.prev_num, search=search, group=selected_group) }}">
+                Previous
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for page_num in contacts.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != contacts.page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('contacts.contacts', page=page_num, search=search, group=selected_group) }}">
+                        {{ page_num }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item active">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+                {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if contacts.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('contacts.contacts', page=contacts.next_num, search=search, group=selected_group) }}">
+                Next
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i data-feather="users" style="width: 64px; height: 64px; opacity: 0.5;" class="mb-3"></i>
+        <h5>No contacts found</h5>
+        {% if search or selected_group %}
+        <p class="text-muted">Try adjusting your search criteria or <a href="{{ url_for('contacts.contacts') }}">clear filters</a>.</p>
+        {% else %}
+        <p class="text-muted">Get started by adding your first contact.</p>
+        <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-2"></i>Add Contact
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="contactName"></strong>?</p>
+                <p class="text-muted mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteContact(contactId, contactName) {
+    document.getElementById('contactName').textContent = contactName;
+    document.getElementById('deleteForm').action = "{{ url_for('contacts.contacts') }}/" + contactId + "/delete";
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

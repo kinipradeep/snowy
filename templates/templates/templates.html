@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Templates - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i data-feather="file-text" class="me-2"></i>Message Templates
+    </h1>
+    <a href="{{ url_for('templates.new_template') }}" class="btn btn-primary">
+        <i data-feather="plus" class="me-2"></i>Create Template
+    </a>
+</div>
+
+<!-- Template Type Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h6 class="mb-0">Filter by Type</h6>
+            </div>
+            <div class="col-md-6">
+                <div class="btn-group w-100" role="group">
+                    <a href="{{ url_for('templates.templates') }}" 
+                       class="btn btn-outline-secondary {% if not selected_type %}active{% endif %}">
+                        All ({{ type_counts.email + type_counts.sms + type_counts.whatsapp + type_counts.rcs }})
+                    </a>
+                    <a href="{{ url_for('templates.templates', type='email') }}" 
+                       class="btn btn-outline-secondary {% if selected_type == 'email' %}active{% endif %}">
+                        Email ({{ type_counts.email }})
+                    </a>
+                    <a href="{{ url_for('templates.templates', type='sms') }}" 
+                       class="btn btn-outline-secondary {% if selected_type == 'sms' %}active{% endif %}">
+                        SMS ({{ type_counts.sms }})
+                    </a>
+                    <a href="{{ url_for('templates.templates', type='whatsapp') }}" 
+                       class="btn btn-outline-secondary {% if selected_type == 'whatsapp' %}active{% endif %}">
+                        WhatsApp ({{ type_counts.whatsapp }})
+                    </a>
+                    <a href="{{ url_for('templates.templates', type='rcs') }}" 
+                       class="btn btn-outline-secondary {% if selected_type == 'rcs' %}active{% endif %}">
+                        RCS ({{ type_counts.rcs }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Templates List -->
+{% if templates %}
+<div class="row g-4">
+    {% for template in templates %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="card-title mb-1">{{ template.name }}</h5>
+                        <span class="badge bg-{% if template.template_type == 'email' %}primary{% elif template.template_type == 'sms' %}success{% elif template.template_type == 'whatsapp' %}info{% else %}warning{% endif %}">
+                            {% if template.template_type == 'email' %}
+                                <i data-feather="mail" style="width: 14px; height: 14px;" class="me-1"></i>
+                            {% elif template.template_type == 'sms' %}
+                                <i data-feather="message-square" style="width: 14px; height: 14px;" class="me-1"></i>
+                            {% elif template.template_type == 'whatsapp' %}
+                                <i data-feather="message-circle" style="width: 14px; height: 14px;" class="me-1"></i>
+                            {% else %}
+                                <i data-feather="smartphone" style="width: 14px; height: 14px;" class="me-1"></i>
+                            {% endif %}
+                            {{ template.template_type.upper() }}
+                        </span>
+                    </div>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i data-feather="more-vertical" style="width: 16px; height: 16px;"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('templates.template_detail', template_id=template.id) }}">
+                                    <i data-feather="eye" class="me-2" style="width: 16px; height: 16px;"></i>View
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('templates.edit_template', template_id=template.id) }}">
+                                    <i data-feather="edit" class="me-2" style="width: 16px; height: 16px;"></i>Edit
+                                </a>
+                            </li>
+                            <li>
+                                <form method="POST" action="{{ url_for('templates.duplicate_template', template_id=template.id) }}" style="display: inline;">
+                                    <button type="submit" class="dropdown-item">
+                                        <i data-feather="copy" class="me-2" style="width: 16px; height: 16px;"></i>Duplicate
+                                    </button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button class="dropdown-item text-danger" 
+                                        onclick="deleteTemplate({{ template.id }}, '{{ template.name }}')">
+                                    <i data-feather="trash-2" class="me-2" style="width: 16px; height: 16px;"></i>Delete
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                {% if template.subject %}
+                <h6 class="text-muted">{{ template.subject }}</h6>
+                {% endif %}
+                
+                <p class="card-text">{{ template.content[:100] }}{% if template.content|length > 100 %}...{% endif %}</p>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        Created {{ template.created_at.strftime('%b %d, %Y') }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="btn-group w-100">
+                    <a href="{{ url_for('templates.template_detail', template_id=template.id) }}" class="btn btn-outline-primary btn-sm">
+                        <i data-feather="eye" class="me-1" style="width: 16px; height: 16px;"></i>View
+                    </a>
+                    <a href="{{ url_for('templates.edit_template', template_id=template.id) }}" class="btn btn-outline-secondary btn-sm">
+                        <i data-feather="edit" class="me-1" style="width: 16px; height: 16px;"></i>Edit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i data-feather="file-text" style="width: 64px; height: 64px; opacity: 0.5;" class="mb-3"></i>
+        <h5>No templates found</h5>
+        {% if selected_type %}
+        <p class="text-muted">No {{ selected_type }} templates yet. <a href="{{ url_for('templates.templates') }}">View all templates</a> or create a new one.</p>
+        {% else %}
+        <p class="text-muted">Templates help you save time by creating reusable message formats. Create your first template to get started.</p>
+        {% endif %}
+        <a href="{{ url_for('templates.new_template') }}" class="btn btn-primary">
+            <i data-feather="plus" class="me-2"></i>Create Template
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the template <strong id="templateName"></strong>?</p>
+                <p class="text-muted mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteTemplate(templateId, templateName) {
+    document.getElementById('templateName').textContent = templateName;
+    document.getElementById('deleteForm').action = "{{ url_for('templates.templates') }}/" + templateId + "/delete";
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if template %}Edit {{ template.name }} - Contact Manager{% else %}Create Template - Contact Manager{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="{% if template %}edit{% else %}file-plus{% endif %}" class="me-2"></i>
+                    {% if template %}Edit Template{% else %}Create New Template{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Template Basic Information -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Template Name *</label>
+                                <input type="text" class="form-control {% if errors.name %}is-invalid{% endif %}" 
+                                       id="name" name="name" 
+                                       value="{{ (form_data and form_data.name) or (template and template.name) or '' }}" 
+                                       required placeholder="Enter template name">
+                                {% if errors.name %}
+                                <div class="invalid-feedback">{{ errors.name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="template_type" class="form-label">Template Type *</label>
+                                <select class="form-select {% if errors.template_type %}is-invalid{% endif %}" 
+                                        id="template_type" name="template_type" required onchange="toggleSubjectField()">
+                                    <option value="">Select Type</option>
+                                    <option value="email" 
+                                            {% if (form_data and form_data.template_type == 'email') or (template and template.template_type == 'email') %}selected{% endif %}>
+                                        Email
+                                    </option>
+                                    <option value="sms" 
+                                            {% if (form_data and form_data.template_type == 'sms') or (template and template.template_type == 'sms') %}selected{% endif %}>
+                                        SMS
+                                    </option>
+                                    <option value="whatsapp" 
+                                            {% if (form_data and form_data.template_type == 'whatsapp') or (template and template.template_type == 'whatsapp') %}selected{% endif %}>
+                                        WhatsApp
+                                    </option>
+                                    <option value="rcs" 
+                                            {% if (form_data and form_data.template_type == 'rcs') or (template and template.template_type == 'rcs') %}selected{% endif %}>
+                                        RCS
+                                    </option>
+                                </select>
+                                {% if errors.template_type %}
+                                <div class="invalid-feedback">{{ errors.template_type }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Subject Field (only for email templates) -->
+                    <div class="mb-3" id="subjectField" 
+                         style="display: {% if (form_data and form_data.template_type == 'email') or (template and template.template_type == 'email') %}block{% else %}none{% endif %};">
+                        <label for="subject" class="form-label">Email Subject *</label>
+                        <input type="text" class="form-control {% if errors.subject %}is-invalid{% endif %}" 
+                               id="subject" name="subject" 
+                               value="{{ (form_data and form_data.subject) or (template and template.subject) or '' }}" 
+                               placeholder="Enter email subject">
+                        {% if errors.subject %}
+                        <div class="invalid-feedback">{{ errors.subject }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Template Content -->
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Template Content *</label>
+                        <textarea class="form-control {% if errors.content %}is-invalid{% endif %}" 
+                                  id="content" name="content" rows="8" required 
+                                  placeholder="Enter your template content here. You can use variables like {first_name}, {last_name}, etc.">{{ (form_data and form_data.content) or (template and template.content) or '' }}</textarea>
+                        {% if errors.content %}
+                        <div class="invalid-feedback">{{ errors.content }}</div>
+                        {% endif %}
+                        <div class="form-text">
+                            You can use variables in your template. Define them in the variables section below.
+                        </div>
+                    </div>
+
+                    <!-- Template Variables -->
+                    <div class="mb-3">
+                        <label for="variables" class="form-label">Template Variables</label>
+                        <textarea class="form-control" id="variables" name="variables" rows="4" 
+                                  placeholder="Enter one variable per line (e.g., first_name, last_name, company)">{% if template and template.variables %}{% set vars = template.variables|from_json %}{% for var in vars %}{{ var }}
+{% endfor %}{% elif form_data and form_data.variables %}{{ form_data.variables }}{% endif %}</textarea>
+                        <div class="form-text">
+                            List the variables that can be used in this template, one per line. These will be replaced with actual values when sending messages.
+                        </div>
+                    </div>
+
+                    <!-- Common Variables Helper -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i data-feather="help-circle" class="me-2" style="width: 16px; height: 16px;"></i>
+                                Common Variables
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-2">Click on any variable to add it to your template:</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('first_name')">
+                                    {first_name}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('last_name')">
+                                    {last_name}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('email')">
+                                    {email}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('company')">
+                                    {company}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('phone')">
+                                    {phone}
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="insertVariable('job_title')">
+                                    {job_title}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('templates.templates') }}" class="btn btn-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="save" class="me-2"></i>
+                            {% if template %}Update Template{% else %}Save Template{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleSubjectField() {
+    const templateType = document.getElementById('template_type').value;
+    const subjectField = document.getElementById('subjectField');
+    const subjectInput = document.getElementById('subject');
+    
+    if (templateType === 'email') {
+        subjectField.style.display = 'block';
+        subjectInput.required = true;
+    } else {
+        subjectField.style.display = 'none';
+        subjectInput.required = false;
+        subjectInput.value = '';
+    }
+}
+
+function insertVariable(variableName) {
+    const contentField = document.getElementById('content');
+    const cursorPos = contentField.selectionStart;
+    const textBefore = contentField.value.substring(0, cursorPos);
+    const textAfter = contentField.value.substring(cursorPos);
+    
+    contentField.value = textBefore + '{' + variableName + '}' + textAfter;
+    
+    // Set cursor position after the inserted variable
+    const newCursorPos = cursorPos + variableName.length + 2;
+    contentField.setSelectionRange(newCursorPos, newCursorPos);
+    contentField.focus();
+    
+    // Add variable to variables list if not already present
+    const variablesField = document.getElementById('variables');
+    const currentVariables = variablesField.value.split('\n').filter(v => v.trim());
+    
+    if (!currentVariables.includes(variableName)) {
+        if (variablesField.value.trim()) {
+            variablesField.value += '\n' + variableName;
+        } else {
+            variablesField.value = variableName;
+        }
+    }
+}
+
+// Initialize subject field visibility on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleSubjectField();
+});
+</script>
+{% endblock %}

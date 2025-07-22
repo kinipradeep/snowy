@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Reset Password - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i data-feather="key" class="me-2"></i>Reset Password
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Enter your email address and we'll send you instructions to reset your password.
+                </p>
+                
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control {% if errors.email %}is-invalid{% endif %}" 
+                               id="email" name="email" value="{{ request.form.email or '' }}" required>
+                        {% if errors.email %}
+                        <div class="invalid-feedback">{{ errors.email }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="send" class="me-2"></i>Send Reset Instructions
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">
+                    Remember your password? 
+                    <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Sign in here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

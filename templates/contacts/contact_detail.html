@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contact.full_name }} - Contact Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i data-feather="user" class="me-2"></i>{{ contact.full_name }}
+                </h4>
+                <div class="btn-group">
+                    <a href="{{ url_for('contacts.edit_contact', contact_id=contact.id) }}" class="btn btn-outline-primary">
+                        <i data-feather="edit" class="me-2"></i>Edit
+                    </a>
+                    <button type="button" class="btn btn-outline-danger" 
+                            onclick="deleteContact({{ contact.id }}, '{{ contact.full_name }}')">
+                        <i data-feather="trash-2" class="me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Contact Information -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Contact Information</h6>
+                        
+                        {% if contact.email %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Email</label>
+                            <p class="mb-0">
+                                <i data-feather="mail" style="width: 16px; height: 16px;" class="me-2"></i>
+                                <a href="mailto:{{ contact.email }}" class="text-decoration-none">{{ contact.email }}</a>
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if contact.phone %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Phone</label>
+                            <p class="mb-0">
+                                <i data-feather="phone" style="width: 16px; height: 16px;" class="me-2"></i>
+                                <a href="tel:{{ contact.phone }}" class="text-decoration-none">{{ contact.phone }}</a>
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if contact.mobile %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Mobile</label>
+                            <p class="mb-0">
+                                <i data-feather="smartphone" style="width: 16px; height: 16px;" class="me-2"></i>
+                                <a href="tel:{{ contact.mobile }}" class="text-decoration-none">{{ contact.mobile }}</a>
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if contact.group %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Group</label>
+                            <p class="mb-0">
+                                <i data-feather="folder" style="width: 16px; height: 16px;" class="me-2"></i>
+                                <a href="{{ url_for('groups.group_detail', group_id=contact.group.id) }}" class="text-decoration-none">
+                                    {{ contact.group.name }}
+                                </a>
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Professional Information -->
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Professional Information</h6>
+                        
+                        {% if contact.company %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Company</label>
+                            <p class="mb-0">
+                                <i data-feather="briefcase" style="width: 16px; height: 16px;" class="me-2"></i>
+                                {{ contact.company }}
+                            </p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if contact.job_title %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Job Title</label>
+                            <p class="mb-0">
+                                <i data-feather="user-check" style="width: 16px; height: 16px;" class="me-2"></i>
+                                {{ contact.job_title }}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Address Information -->
+                {% if contact.address or contact.city or contact.state or contact.postal_code or contact.country %}
+                <div class="mt-4">
+                    <h6 class="text-muted mb-3">Address Information</h6>
+                    <div class="mb-3">
+                        <i data-feather="map-pin" style="width: 16px; height: 16px;" class="me-2"></i>
+                        {% if contact.address %}
+                        {{ contact.address }}<br>
+                        {% endif %}
+                        {% if contact.city or contact.state or contact.postal_code %}
+                        {{ contact.city }}{% if contact.city and contact.state %}, {% endif %}{{ contact.state }} {{ contact.postal_code }}<br>
+                        {% endif %}
+                        {% if contact.country %}
+                        {{ contact.country }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Notes -->
+                {% if contact.notes %}
+                <div class="mt-4">
+                    <h6 class="text-muted mb-3">Notes</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ contact.notes|nl2br }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if contact.email %}
+                    <a href="mailto:{{ contact.email }}" class="btn btn-outline-primary">
+                        <i data-feather="mail" class="me-2"></i>Send Email
+                    </a>
+                    {% endif %}
+                    
+                    {% if contact.phone %}
+                    <a href="tel:{{ contact.phone }}" class="btn btn-outline-success">
+                        <i data-feather="phone" class="me-2"></i>Call Phone
+                    </a>
+                    {% endif %}
+                    
+                    {% if contact.mobile %}
+                    <a href="tel:{{ contact.mobile }}" class="btn btn-outline-success">
+                        <i data-feather="smartphone" class="me-2"></i>Call Mobile
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('contacts.edit_contact', contact_id=contact.id) }}" class="btn btn-outline-secondary">
+                        <i data-feather="edit" class="me-2"></i>Edit Contact
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Metadata -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Contact Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <small class="text-muted">Created:</small><br>
+                        <small>{{ contact.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted">Last Updated:</small><br>
+                        <small>{{ contact.updated_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="contactName"></strong>?</p>
+                <p class="text-muted mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteContact(contactId, contactName) {
+    document.getElementById('contactName').textContent = contactName;
+    document.getElementById('deleteForm').action = "{{ url_for('contacts.delete_contact', contact_id=contact.id) }}";
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}
