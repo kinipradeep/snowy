@@ -1,27 +1,39 @@
 /* Professional Contact Manager Design System */
 
 :root {
-  /* Modern Color Palette */
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-light: #3b82f6;
-  --secondary: #64748b;
-  --success: #059669;
-  --danger: #dc2626;
-  --warning: #d97706;
-  --info: #0284c7;
+  /* HubSpot-inspired Color System */
+  --primary: #ff7a59;
+  --primary-dark: #e85d3d;
+  --primary-light: #ff9475;
+  --secondary: #516f90;
+  --success: #00a971;
+  --danger: #e85d3d;
+  --warning: #f5c60a;
+  --info: #00bcd4;
   
-  /* Neutral Colors */
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
-  --gray-500: #64748b;
-  --gray-600: #475569;
-  --gray-700: #334155;
-  --gray-800: #1e293b;
-  --gray-900: #0f172a;
+  /* Sophisticated Neutral Palette */
+  --white: #ffffff;
+  --gray-50: #fafbfc;
+  --gray-100: #f5f8fa;
+  --gray-150: #eaf0f6;
+  --gray-200: #e3ebf0;
+  --gray-250: #d5dde5;
+  --gray-300: #cbd2d9;
+  --gray-400: #9da4ae;
+  --gray-500: #6e7c87;
+  --gray-600: #516f90;
+  --gray-700: #405264;
+  --gray-800: #33475b;
+  --gray-900: #2d3e50;
+  
+  /* Dark Mode Support */
+  --bg-primary: #ffffff;
+  --bg-secondary: #fafbfc;
+  --bg-tertiary: #f5f8fa;
+  --text-primary: #33475b;
+  --text-secondary: #516f90;
+  --text-muted: #6e7c87;
+  --border-color: #e3ebf0;
   
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -66,19 +78,66 @@
 body {
   font-family: var(--font-sans);
   font-size: var(--font-size-base);
-  line-height: 1.6;
-  color: var(--gray-700);
-  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Professional Navigation */
+/* HubSpot-style Navigation */
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  background: var(--white);
   border: none;
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-3) 0;
+  box-shadow: 0 2px 8px rgba(45, 62, 80, 0.08);
+  padding: 0;
+  min-height: 64px;
+  z-index: 1000;
+}
+
+.navbar .container {
+  max-width: 1400px;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  padding: 1rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav .nav-item {
+  margin: 0 var(--space-1);
+}
+
+.nav-link {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 1rem 1.25rem !important;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary);
+  background: rgba(255, 122, 89, 0.08);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 1.25rem;
+  right: 1.25rem;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 1px;
 }
 
 .navbar-brand {

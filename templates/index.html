@@ -1,29 +1,66 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if logged_in %}Dashboard - ContactHub{% else %}Welcome - ContactHub{% endif %}
+{% if logged_in %}Dashboard - ContactHub{% else %}Enterprise Contact Management - ContactHub{% endif %}
 {% endblock %}
 
 {% block content %}
 {% if not logged_in %}
-<!-- Modern Landing Page -->
+<!-- Enterprise Landing Page - HubSpot/Zoho Inspired -->
 <div class="hero-section">
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8 text-center">
-                <h1 class="hero-title fade-in">
-                    Manage Your Business Contacts Like a Pro
-                </h1>
-                <p class="hero-subtitle fade-in">
-                    ContactHub is the modern, professional contact management system built for growing businesses. Organize contacts, create templates, and collaborate with your team - all in one beautiful platform.
-                </p>
-                <div class="d-grid gap-3 d-md-block mt-5 fade-in">
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-5">
-                        <i data-feather="zap" width="20" height="20" class="me-2"></i>Get Started Free
-                    </a>
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-5 ms-md-3">
-                        <i data-feather="log-in" width="20" height="20" class="me-2"></i>Sign In
-                    </a>
+        <div class="hero-content text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <h1 class="hero-title fade-in">
+                        The Contact Management Platform Built for Growth
+                    </h1>
+                    <p class="hero-subtitle fade-in">
+                        ContactHub delivers enterprise-grade contact management with the simplicity your team needs. 
+                        Scale your relationships, streamline your workflows, and grow your business with confidence.
+                    </p>
+                    <div class="d-flex flex-column flex-md-row gap-4 justify-content-center align-items-center mt-5 fade-in">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-light btn-lg px-5 py-3">
+                            <i data-feather="zap" width="20" height="20" class="me-2"></i>
+                            Start Free Trial
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-5 py-3">
+                            <i data-feather="log-in" width="20" height="20" class="me-2"></i>
+                            Sign In
+                        </a>
+                    </div>
+                    <div class="mt-4 fade-in">
+                        <small class="opacity-75">
+                            ✓ No credit card required  &nbsp;&nbsp;  ✓ 14-day free trial  &nbsp;&nbsp;  ✓ Cancel anytime
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trust & Social Proof Section -->
+<div class="py-5" style="background: var(--bg-surface);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <p class="text-muted">Trusted by growing businesses worldwide</p>
+            <div class="row justify-content-center align-items-center mt-4">
+                <div class="col-6 col-md-2 text-center opacity-50">
+                    <div class="fw-bold">500+</div>
+                    <small>Companies</small>
+                </div>
+                <div class="col-6 col-md-2 text-center opacity-50">
+                    <div class="fw-bold">50K+</div>
+                    <small>Contacts</small>
+                </div>
+                <div class="col-6 col-md-2 text-center opacity-50">
+                    <div class="fw-bold">99.9%</div>
+                    <small>Uptime</small>
+                </div>
+                <div class="col-6 col-md-2 text-center opacity-50">
+                    <div class="fw-bold">24/7</div>
+                    <small>Support</small>
                 </div>
             </div>
         </div>
@@ -32,241 +69,369 @@
 
 <!-- Features Section -->
 <div class="container py-5">
-    <div class="row text-center mb-5">
-        <div class="col-lg-8 mx-auto">
-            <h2 class="display-5 fw-bold mb-3">Everything you need to manage contacts</h2>
-            <p class="lead text-muted">Built for modern teams who value efficiency, organization, and professional communication.</p>
-        </div>
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold mb-3">Everything you need to scale your relationships</h2>
+        <p class="lead text-muted col-lg-8 mx-auto">
+            Built for modern teams who need powerful features without the complexity. 
+            From startups to enterprises, ContactHub grows with your business.
+        </p>
     </div>
     
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="users" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Smart Contact Management</h3>
-                <p class="text-muted">Store comprehensive contact information with 35+ customizable fields. Track everything from basic details to social media profiles and lead status.</p>
+    <div class="feature-grid">
+        <div class="feature-card slide-up">
+            <div class="feature-icon">
+                <i data-feather="database" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Advanced Contact Management</h3>
+            <p class="feature-description">
+                Store comprehensive contact profiles with 35+ custom fields. Track professional details, 
+                social media profiles, lead status, and complete interaction history.
+            </p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="upload" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Bulk CSV Import</h3>
-                <p class="text-muted">Import thousands of contacts instantly with our intelligent CSV processing. Maps fields automatically and handles duplicates intelligently.</p>
+        
+        <div class="feature-card slide-up" style="animation-delay: 0.1s;">
+            <div class="feature-icon">
+                <i data-feather="upload-cloud" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Smart Bulk Import</h3>
+            <p class="feature-description">
+                Import thousands of contacts instantly with intelligent CSV processing. 
+                Automatic field mapping, duplicate detection, and error handling included.
+            </p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="folder" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Organized Groups</h3>
-                <p class="text-muted">Create custom groups to categorize contacts by department, location, or any criteria. Perfect for targeted communication and organization.</p>
+        
+        <div class="feature-card slide-up" style="animation-delay: 0.2s;">
+            <div class="feature-icon">
+                <i data-feather="users" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Team Collaboration</h3>
+            <p class="feature-description">
+                Multi-tenant organizations with role-based permissions. Invite team members, 
+                assign roles, and collaborate securely across departments.
+            </p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="message-square" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Message Templates</h3>
-                <p class="text-muted">Create reusable templates for Email, SMS, WhatsApp, and RCS. Save time with personalized variables and professional formatting.</p>
+        
+        <div class="feature-card slide-up" style="animation-delay: 0.3s;">
+            <div class="feature-icon">
+                <i data-feather="layers" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Smart Organization</h3>
+            <p class="feature-description">
+                Create dynamic groups and segments. Organize contacts by department, 
+                location, lead status, or any custom criteria for targeted outreach.
+            </p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="briefcase" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Team Collaboration</h3>
-                <p class="text-muted">Multi-tenant organizations with role-based permissions. Invite team members and manage access levels for secure collaboration.</p>
+        
+        <div class="feature-card slide-up" style="animation-delay: 0.4s;">
+            <div class="feature-icon">
+                <i data-feather="message-circle" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Multi-Channel Templates</h3>
+            <p class="feature-description">
+                Create reusable templates for Email, SMS, WhatsApp, and RCS messaging. 
+                Personalize with variables and maintain consistent communication.
+            </p>
         </div>
-        <div class="col-md-4">
-            <div class="feature-card">
-                <div class="feature-icon">
-                    <i data-feather="trending-up" width="28" height="28"></i>
-                </div>
-                <h3 class="feature-title">Lead Tracking</h3>
-                <p class="text-muted">Track lead sources, status, and priority levels. Monitor your sales pipeline and convert prospects into customers efficiently.</p>
+        
+        <div class="feature-card slide-up" style="animation-delay: 0.5s;">
+            <div class="feature-icon">
+                <i data-feather="trending-up" width="32" height="32"></i>
             </div>
+            <h3 class="feature-title">Pipeline Management</h3>
+            <p class="feature-description">
+                Track leads through your sales pipeline. Monitor conversion rates, 
+                identify bottlenecks, and optimize your sales process with actionable insights.
+            </p>
         </div>
     </div>
 </div>
 
 <!-- CTA Section -->
-<div class="bg-light py-5">
-    <div class="container text-center">
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
-                <h3 class="fw-bold mb-3">Ready to organize your contacts?</h3>
-                <p class="text-muted mb-4">Join hundreds of businesses already using ContactHub to manage their relationships professionally.</p>
-                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">
-                    <i data-feather="arrow-right" width="20" height="20" class="me-2"></i>Start Your Free Account
-                </a>
+<div class="py-5" style="background: var(--bg-surface-secondary);">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h3 class="h2 fw-bold mb-4">Ready to transform your contact management?</h3>
+                <p class="lead text-muted mb-5">
+                    Join hundreds of growing businesses who trust ContactHub to manage their most important relationships.
+                </p>
+                <div class="d-flex flex-column flex-md-row gap-3 justify-content-center">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5">
+                        <i data-feather="arrow-right" width="20" height="20" class="me-2"></i>
+                        Start Your Free Trial
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary btn-lg px-5">
+                        <i data-feather="play-circle" width="20" height="20" class="me-2"></i>
+                        Watch Demo
+                    </a>
+                </div>
+                <div class="mt-4">
+                    <small class="text-muted">
+                        No setup fees • Cancel anytime • Enterprise support available
+                    </small>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 {% else %}
-<!-- Professional Dashboard -->
-<div class="row mb-4">
-    <div class="col">
-        <h1 class="h2 fw-bold mb-1">Welcome back, {{ user.first_name if user else 'User' }}!</h1>
-        <p class="text-muted">Here's what's happening with your contacts today.</p>
+<!-- Enterprise Dashboard -->
+<div class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="dashboard-title">Good afternoon, {{ user.first_name if user else 'User' }}!</h1>
+                <p class="dashboard-subtitle">Here's your contact management overview for today</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+                    <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-primary">
+                        <i data-feather="user-plus" width="16" height="16" class="me-2"></i>
+                        Add Contact
+                    </a>
+                    <a href="{{ url_for('contacts.import_contacts') }}" class="btn btn-outline-primary">
+                        <i data-feather="upload" width="16" height="16" class="me-2"></i>
+                        Import CSV
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Organization Badge -->
+<!-- Organization Context -->
 {% if current_organization %}
-<div class="org-switcher slide-up">
-    <div class="d-flex align-items-center justify-content-between">
-        <div class="d-flex align-items-center">
-            <span class="org-badge me-3">{{ current_organization.name }}</span>
-            <span class="text-muted small">Current Organization</span>
+<div class="container mb-5">
+    <div class="card" style="background: var(--bg-surface-secondary); border: 1px solid var(--border-default);">
+        <div class="card-body py-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.75rem; background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);">
+                        {{ current_organization.name[0].upper() }}
+                    </div>
+                    <div>
+                        <div class="fw-semibold">{{ current_organization.name }}</div>
+                        <small class="text-muted">Current Organization</small>
+                    </div>
+                </div>
+                <a href="{{ url_for('organizations.organizations') }}" class="btn btn-sm btn-outline-secondary">
+                    <i data-feather="settings" width="14" height="14" class="me-1"></i>
+                    Manage
+                </a>
+            </div>
         </div>
-        <a href="{{ url_for('organizations.organizations') }}" class="btn btn-outline-primary btn-sm">
-            <i data-feather="settings" width="16" height="16" class="me-1"></i>Manage
-        </a>
     </div>
 </div>
 {% endif %}
 
-<!-- Dashboard Stats -->
-<div class="row g-4 mb-5">
-    <div class="col-lg-3 col-md-6">
-        <div class="card stats-card text-white">
-            <div class="card-body">
+<!-- Dashboard Statistics -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card stats-primary">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stats-number">{{ total_contacts or 0 }}</div>
                         <div class="stats-label">Total Contacts</div>
                     </div>
-                    <i data-feather="users" width="32" height="32" style="opacity: 0.7;"></i>
+                    <div class="stats-icon">
+                        <i data-feather="users" width="40" height="40"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="card stats-card text-white" style="background: linear-gradient(135deg, var(--success) 0%, #047857 100%);">
-            <div class="card-body">
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card stats-success">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stats-number">{{ total_groups or 0 }}</div>
                         <div class="stats-label">Active Groups</div>
                     </div>
-                    <i data-feather="folder" width="32" height="32" style="opacity: 0.7;"></i>
+                    <div class="stats-icon">
+                        <i data-feather="folder" width="40" height="40"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="card stats-card text-white" style="background: linear-gradient(135deg, var(--info) 0%, #0369a1 100%);">
-            <div class="card-body">
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card stats-info">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stats-number">{{ total_templates or 0 }}</div>
                         <div class="stats-label">Message Templates</div>
                     </div>
-                    <i data-feather="file-text" width="32" height="32" style="opacity: 0.7;"></i>
+                    <div class="stats-icon">
+                        <i data-feather="message-square" width="40" height="40"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-lg-3 col-md-6">
-        <div class="card stats-card text-white" style="background: linear-gradient(135deg, var(--warning) 0%, #c2410c 100%);">
-            <div class="card-body">
+        
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card stats-warning">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <div class="stats-number">{{ recent_contacts or 0 }}</div>
                         <div class="stats-label">Added This Week</div>
                     </div>
-                    <i data-feather="trending-up" width="32" height="32" style="opacity: 0.7;"></i>
+                    <div class="stats-icon">
+                        <i data-feather="trending-up" width="40" height="40"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="row g-4 mb-5">
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i data-feather="zap" width="20" height="20" class="me-2"></i>Quick Actions
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-3">
-                    <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-primary btn-lg">
-                        <i data-feather="user-plus" width="20" height="20" class="me-2"></i>Add New Contact
-                    </a>
-                    <a href="{{ url_for('contacts.import_contacts') }}" class="btn btn-outline-primary">
-                        <i data-feather="upload" width="20" height="20" class="me-2"></i>Import from CSV
-                    </a>
-                    <a href="{{ url_for('groups.new_group') }}" class="btn btn-outline-secondary">
-                        <i data-feather="folder-plus" width="20" height="20" class="me-2"></i>Create Group
-                    </a>
+<!-- Main Dashboard Content -->
+<div class="container">
+    <div class="row g-4">
+        <!-- Quick Actions -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="zap" width="20" height="20" class="me-2"></i>
+                        Quick Actions
+                    </h5>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i data-feather="activity" width="20" height="20" class="me-2"></i>Recent Activity
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center py-4">
-                    <i data-feather="clock" width="48" height="48" class="text-muted mb-3"></i>
-                    <p class="text-muted">Activity tracking coming soon!</p>
-                    <small class="text-muted">We'll show your recent contact additions, group changes, and template usage here.</small>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Contacts Preview -->
-{% if recent_contacts_list and recent_contacts_list|length > 0 %}
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="card-title mb-0">
-                    <i data-feather="users" width="20" height="20" class="me-2"></i>Recent Contacts
-                </h5>
-                <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-primary btn-sm">
-                    <i data-feather="arrow-right" width="16" height="16" class="me-1"></i>View All
-                </a>
-            </div>
-            <div class="card-body">
-                <div class="row g-3">
-                    {% for contact in recent_contacts_list[:6] %}
-                    <div class="col-md-4">
-                        <div class="contact-card">
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('contacts.new_contact') }}" class="btn btn-outline-primary btn-lg text-start">
                             <div class="d-flex align-items-center">
-                                <div class="contact-avatar me-3">
-                                    {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                                <div class="me-3">
+                                    <i data-feather="user-plus" width="24" height="24"></i>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">{{ contact.first_name }} {{ contact.last_name }}</h6>
-                                    <p class="text-muted small mb-1">{{ contact.company or 'No company' }}</p>
-                                    <p class="text-muted small mb-0">{{ contact.email or contact.phone or 'No contact info' }}</p>
+                                <div>
+                                    <div class="fw-semibold">Add New Contact</div>
+                                    <small class="text-muted">Create a new contact record</small>
                                 </div>
                             </div>
-                        </div>
+                        </a>
+                        
+                        <a href="{{ url_for('contacts.import_contacts') }}" class="btn btn-outline-secondary text-start">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i data-feather="upload-cloud" width="24" height="24"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Import from CSV</div>
+                                    <small class="text-muted">Bulk import contact data</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ url_for('groups.new_group') }}" class="btn btn-outline-secondary text-start">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i data-feather="folder-plus" width="24" height="24"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold">Create New Group</div>
+                                    <small class="text-muted">Organize your contacts</small>
+                                </div>
+                            </div>
+                        </a>
                     </div>
-                    {% endfor %}
                 </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i data-feather="activity" width="20" height="20" class="me-2"></i>
+                        Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i data-feather="clock" width="48" height="48" class="text-muted"></i>
+                        </div>
+                        <h6 class="text-muted">Activity Feed Coming Soon</h6>
+                        <p class="text-muted small mb-0">
+                            We're building an activity feed to show your recent contact additions, 
+                            group changes, and template usage.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Contacts -->
+{% if recent_contacts_list and recent_contacts_list|length > 0 %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title">
+                    <i data-feather="users" width="20" height="20" class="me-2"></i>
+                    Recent Contacts
+                </h5>
+                <a href="{{ url_for('contacts.contacts') }}" class="btn btn-outline-primary btn-sm">
+                    <i data-feather="arrow-right" width="16" height="16" class="me-1"></i>
+                    View All
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Contact</th>
+                            <th>Company</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contact in recent_contacts_list[:5] %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="user-avatar" style="width: 32px; height: 32px; font-size: 0.75rem;">
+                                        {{ contact.first_name[0] }}{{ contact.last_name[0] }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-semibold">{{ contact.first_name }} {{ contact.last_name }}</div>
+                                        {% if contact.job_title %}
+                                        <small class="text-muted">{{ contact.job_title }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-muted">{{ contact.company or '—' }}</span>
+                            </td>
+                            <td>
+                                {% if contact.email %}
+                                <a href="mailto:{{ contact.email }}" class="text-decoration-none">
+                                    {{ contact.email }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="text-muted">{{ contact.phone or contact.mobile or '—' }}</span>
+                            </td>
+                            <td>
+                                <span class="text-muted">Recently</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
