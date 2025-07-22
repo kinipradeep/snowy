@@ -141,7 +141,7 @@ def reset_request():
         
         return render_template('auth/reset_request.html', errors=form.errors)
     
-    return render_template('auth/reset_request.html')
+    return render_template('auth/reset_request.html', errors={})
 
 @auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -170,4 +170,4 @@ def reset_password(token):
         
         return render_template('auth/reset_password.html', errors=form.errors, token=token)
     
-    return render_template('auth/reset_password.html', token=token)
+    return render_template('auth/reset_password.html', token=token, errors={})
