@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}{{ organization.name }} - Organization Details{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('organizations.organizations') }}">Organizations</a></li>
+                    <li class="breadcrumb-item active">{{ organization.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="h2 fw-bold mb-1">{{ organization.name }}</h1>
+            <p class="text-muted">Organization details and team management</p>
+        </div>
+    </div>
+
+    <!-- Organization Info -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="building" width="20" height="20" class="me-2"></i>
+                        Organization Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Organization Name</label>
+                            <div class="fw-semibold">{{ organization.name }}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Created Date</label>
+                            <div>{{ organization.created_at.strftime('%B %d, %Y') if organization.created_at else 'N/A' }}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-muted">Description</label>
+                            <div>{{ organization.description or 'No description provided' }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-3">
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h4 mb-1 text-primary">{{ member_count or 0 }}</div>
+                            <div class="small text-muted">Team Members</div>
+                        </div>
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h4 mb-1 text-success">{{ contact_count or 0 }}</div>
+                            <div class="small text-muted">Contacts</div>
+                        </div>
+                        <div class="text-center p-3 bg-light rounded">
+                            <div class="h4 mb-1 text-info">{{ template_count or 0 }}</div>
+                            <div class="small text-muted">Templates</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Members -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i data-feather="users" width="20" height="20" class="me-2"></i>
+                Team Members
+            </h5>
+            {% if user_role == 'owner' or user_role == 'admin' %}
+            <a href="{{ url_for('organizations.invite_form', org_id=organization.id) }}" class="btn btn-primary btn-sm">
+                <i data-feather="user-plus" width="16" height="16" class="me-1"></i>
+                Invite Member
+            </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if members and members|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Joined</th>
+                            {% if user_role == 'owner' or user_role == 'admin' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in members %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if member.user.profile_image_url %}
+                                    <img src="{{ member.user.profile_image_url }}" alt="{{ member.user.first_name }}" class="rounded-circle me-2" width="32" height="32">
+                                    {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                        <span class="text-white small fw-bold">
+                                            {% if member.user.first_name %}{{ member.user.first_name[0] }}{% elif member.user.email %}{{ member.user.email[0]|upper }}{% else %}U{% endif %}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-semibold">
+                                            {% if member.user.first_name or member.user.last_name %}
+                                                {{ member.user.first_name or '' }} {{ member.user.last_name or '' }}
+                                            {% else %}
+                                                {{ member.user.email }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ member.user.email }}</td>
+                            <td>
+                                <span class="badge {% if member.role == 'owner' %}bg-primary{% elif member.role == 'admin' %}bg-success{% elif member.role == 'member' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ member.role.title() }}
+                                </span>
+                            </td>
+                            <td>{{ member.created_at.strftime('%b %d, %Y') if member.created_at else 'N/A' }}</td>
+                            {% if user_role == 'owner' or user_role == 'admin' %}
+                            <td>
+                                {% if member.role != 'owner' and member.user.id != current_user.id %}
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="changeRole({{ member.id }}, '{{ member.role }}')">Change Role</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="removeMember({{ member.id }}, '{{ member.user.email }}')">Remove</a></li>
+                                    </ul>
+                                </div>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <div class="mb-3">
+                    <i data-feather="users" width="48" height="48" class="text-muted"></i>
+                </div>
+                <h6 class="text-muted">No Team Members</h6>
+                <p class="text-muted small mb-0">
+                    Invite team members to collaborate on contacts and campaigns.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="d-flex gap-3 mt-4">
+        <a href="{{ url_for('organizations.organizations') }}" class="btn btn-secondary">
+            <i data-feather="arrow-left" width="16" height="16" class="me-2"></i>
+            Back to Organizations
+        </a>
+        {% if user_role == 'owner' or user_role == 'admin' %}
+        <a href="{{ url_for('organizations.edit_organization', org_id=organization.id) }}" class="btn btn-outline-primary">
+            <i data-feather="edit" width="16" height="16" class="me-2"></i>
+            Edit Organization
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changeRole(memberId, currentRole) {
+    // Role change functionality
+    const roles = ['viewer', 'member', 'admin'];
+    const roleOptions = roles.filter(r => r !== currentRole);
+    
+    let options = roleOptions.map(role => `<option value="${role}">${role.charAt(0).toUpperCase() + role.slice(1)}</option>`).join('');
+    
+    const newRole = prompt(`Select new role:\n${roleOptions.join(', ')}`);
+    if (newRole && roles.includes(newRole)) {
+        // You would implement the actual role change here
+        fetch(`/organizations/members/${memberId}/role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: newRole })
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to change role');
+            }
+        });
+    }
+}
+
+function removeMember(memberId, email) {
+    if (confirm(`Are you sure you want to remove ${email} from this organization?`)) {
+        fetch(`/organizations/members/${memberId}`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Failed to remove member');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

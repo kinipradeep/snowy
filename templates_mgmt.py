@@ -46,9 +46,19 @@ def templates():
         page=page, per_page=per_page, error_out=False
     )
     
+    # Get template counts by type for current organization
+    type_counts = {
+        'email': Template.query.filter_by(organization_id=organization.id, template_type='email').count(),
+        'sms': Template.query.filter_by(organization_id=organization.id, template_type='sms').count(),
+        'whatsapp': Template.query.filter_by(organization_id=organization.id, template_type='whatsapp').count(),
+        'rcs': Template.query.filter_by(organization_id=organization.id, template_type='rcs').count()
+    }
+    
     return render_template('templates/templates.html', 
-                         templates=templates, 
-                         template_type=template_type, 
+                         templates=templates.items, 
+                         pagination=templates,
+                         selected_type=template_type,
+                         type_counts=type_counts,
                          search=search)
 
 @templates_bp.route('/new', methods=['GET', 'POST'])
@@ -84,7 +94,7 @@ def new_template():
                 content=form.content,
                 variables=json.dumps(variables) if variables else None,
                 organization_id=organization.id,
-                created_by_id=user.id
+                created_by_id=user['id'] if isinstance(user, dict) else user.id
             )
             
             try:
@@ -106,6 +116,8 @@ def new_template():
 def template_detail(template_id):
     """View template details"""
     organization = get_current_organization()
+    if not organization:
+        return redirect(url_for('organizations.organizations'))
     template = Template.query.filter_by(id=template_id, organization_id=organization.id).first_or_404()
     
     # Parse variables
