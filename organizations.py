@@ -150,6 +150,27 @@ def save_all_messaging_config(org_id):
     flash('All messaging settings saved successfully!', 'success')
     return redirect(url_for('organizations.settings', org_id=org_id))
 
+@organizations_bp.route('/<int:org_id>/update', methods=['POST'])
+@login_required
+def update_organization(org_id):
+    """Update organization details"""
+    user = get_current_user()
+    user_role = UserRole.query.filter_by(user_id=user.id, organization_id=org_id).first()
+    
+    if not user_role or user_role.role not in ['owner', 'admin']:
+        flash('You do not have permission to modify organization details.', 'danger')
+        return redirect(url_for('organizations.settings', org_id=org_id))
+    
+    organization = Organization.query.get_or_404(org_id)
+    
+    # Update organization details
+    organization.name = request.form.get('name', '').strip()
+    organization.description = request.form.get('description', '').strip()
+    
+    db.session.commit()
+    flash('Organization updated successfully!', 'success')
+    return redirect(url_for('organizations.settings', org_id=org_id))
+
 
 
 @organizations_bp.route('/<int:org_id>/test-sms', methods=['POST'])
