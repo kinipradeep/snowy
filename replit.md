@@ -1,8 +1,8 @@
-# Contact Manager Application
+# Cool Blue Application
 
 ## Overview
 
-This is a comprehensive multi-tenant Flask-based contact management system built with PostgreSQL. The application features organization-based collaboration where teams can share contact databases, with role-based permissions, user authentication, and advanced contact/template management capabilities. Users automatically get their own organization when registering and can create additional organizations or join existing ones through email invitations.
+This is a comprehensive multi-tenant Flask-based communication management system built with PostgreSQL. The application features organization-based collaboration where teams can share contact databases, with role-based permissions, user authentication, and advanced contact/template management capabilities. Users automatically get their own organization when registering and can create additional organizations or join existing ones through email invitations.
 
 ## User Preferences
 
@@ -125,6 +125,8 @@ Preferred communication style: Simple, everyday language.
 ## Recent Changes
 
 **January 2025**: 
+- **UPDATED: Rebranded from ContactHub to Cool Blue** - Complete application rebranding
+- Fixed all routing errors and modernized dashboard with professional blue theme
 - Implemented comprehensive multi-tenant architecture with organizations and role-based permissions
 - Added team collaboration features with email invitations
 - Converted from user-based to organization-based data scoping

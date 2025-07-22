@@ -1,6 +1,6 @@
-# Contact Manager - Multi-Tenant Communication Platform
+# Cool Blue - Multi-Tenant Communication Platform
 
-A sophisticated multi-tenant Flask-based contact management system built with PostgreSQL, featuring organization-based collaboration, role-based permissions, and comprehensive multi-channel messaging capabilities.
+A sophisticated multi-tenant Flask-based communication management system built with PostgreSQL, featuring organization-based collaboration, role-based permissions, and comprehensive multi-channel messaging capabilities.
 
 ## 🚀 Features
 

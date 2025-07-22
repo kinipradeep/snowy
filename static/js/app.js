@@ -305,7 +305,7 @@ const TemplateUtils = {
 };
 
 // Export for use in other scripts
-window.ContactManager = {
+window.CoolBlue = {
     showButtonLoading,
     hideButtonLoading,
     copyToClipboard,
