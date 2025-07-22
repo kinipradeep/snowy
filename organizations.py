@@ -301,10 +301,29 @@ def invite_form(org_id):
 @login_required
 def test_sms(org_id):
     """Test SMS configuration"""
-    from flask import jsonify
+    from flask import jsonify, request
+    from messaging_clients import UnifiedMessagingClient
+    
     try:
-        # Add SMS test logic here
-        return jsonify({'success': True, 'message': 'SMS test functionality not yet implemented'})
+        data = request.get_json()
+        test_phone = data.get('phone')
+        
+        if not test_phone:
+            return jsonify({'success': False, 'error': 'Phone number required'})
+        
+        # Get organization config
+        config = OrganizationConfig.query.filter_by(organization_id=org_id).first()
+        if not config:
+            return jsonify({'success': False, 'error': 'Organization messaging not configured'})
+        
+        # Test SMS
+        client = UnifiedMessagingClient(config)
+        result = client.send_sms(
+            test_phone, 
+            f"Test SMS from {config.default_sender_name or 'your organization'}. Configuration is working!"
+        )
+        
+        return jsonify(result)
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -312,10 +331,30 @@ def test_sms(org_id):
 @login_required  
 def test_email(org_id):
     """Test email configuration"""
-    from flask import jsonify
+    from flask import jsonify, request
+    from messaging_clients import UnifiedMessagingClient
+    
     try:
-        # Add email test logic here
-        return jsonify({'success': True, 'message': 'Email test functionality not yet implemented'})
+        data = request.get_json()
+        test_email = data.get('email')
+        
+        if not test_email:
+            return jsonify({'success': False, 'error': 'Email address required'})
+        
+        # Get organization config
+        config = OrganizationConfig.query.filter_by(organization_id=org_id).first()
+        if not config:
+            return jsonify({'success': False, 'error': 'Organization messaging not configured'})
+        
+        # Test Email
+        client = UnifiedMessagingClient(config)
+        result = client.send_email(
+            test_email,
+            f"Test Email from {config.default_sender_name or 'Your Organization'}",
+            f"This is a test email to verify your email configuration is working correctly.\n\nSent from your contact management system."
+        )
+        
+        return jsonify(result)
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
@@ -323,10 +362,29 @@ def test_email(org_id):
 @login_required
 def test_whatsapp(org_id):
     """Test WhatsApp configuration"""
-    from flask import jsonify
+    from flask import jsonify, request
+    from messaging_clients import UnifiedMessagingClient
+    
     try:
-        # Add WhatsApp test logic here
-        return jsonify({'success': True, 'message': 'WhatsApp test functionality not yet implemented'})
+        data = request.get_json()
+        test_phone = data.get('phone')
+        
+        if not test_phone:
+            return jsonify({'success': False, 'error': 'Phone number required'})
+        
+        # Get organization config
+        config = OrganizationConfig.query.filter_by(organization_id=org_id).first()
+        if not config:
+            return jsonify({'success': False, 'error': 'Organization messaging not configured'})
+        
+        # Test WhatsApp
+        client = UnifiedMessagingClient(config)
+        result = client.send_whatsapp(
+            test_phone,
+            f"Test WhatsApp message from {config.default_sender_name or 'your organization'}. Configuration is working!"
+        )
+        
+        return jsonify(result)
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 

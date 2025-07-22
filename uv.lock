@@ -769,6 +769,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "boto3" },
+    { name = "botocore" },
     { name = "email-validator" },
     { name = "flask" },
     { name = "flask-dance" },
@@ -778,6 +779,7 @@ dependencies = [
     { name = "oauthlib" },
     { name = "psycopg2-binary" },
     { name = "pyjwt" },
+    { name = "requests" },
     { name = "sqlalchemy" },
     { name = "twilio" },
     { name = "werkzeug" },
@@ -786,6 +788,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "boto3", specifier = ">=1.39.10" },
+    { name = "botocore", specifier = ">=1.39.10" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "flask", specifier = ">=3.1.1" },
     { name = "flask-dance", specifier = ">=7.1.0" },
@@ -795,6 +798,7 @@ requires-dist = [
     { name = "oauthlib", specifier = ">=3.3.1" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "requests", specifier = ">=2.32.4" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "twilio", specifier = ">=9.6.5" },
     { name = "werkzeug", specifier = ">=3.1.3" },

@@ -17,7 +17,8 @@ from twilio.rest import Client as TwilioClient
 from twilio.base.exceptions import TwilioException
 
 from flask import current_app
-from models import Contact, Template, Organization
+from models import Contact, Template, Organization, OrganizationConfig
+from messaging_clients import UnifiedMessagingClient
 
 
 class MessagingService:
