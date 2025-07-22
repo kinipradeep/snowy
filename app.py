@@ -38,7 +38,7 @@ def create_app():
     from users import users_bp
     from organizations import organizations_bp
     # from messaging import messaging_bp  # Will add after fixing
-    from api import api_bp
+    # from api import api_bp  # Temporarily disabled due to missing models
     
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(contacts_bp, url_prefix='/contacts')
@@ -47,7 +47,7 @@ def create_app():
     app.register_blueprint(users_bp, url_prefix='/users')
     app.register_blueprint(organizations_bp, url_prefix='/organizations')
     # app.register_blueprint(messaging_bp, url_prefix='/messaging')  # Will add after fixing
-    app.register_blueprint(api_bp)
+    # app.register_blueprint(api_bp)  # Temporarily disabled due to missing models
     
     # Import main routes to register them with the app
     import main
